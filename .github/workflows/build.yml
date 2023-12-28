@@ -95,7 +95,7 @@ jobs:
           path: dist/*
           if-no-files-found: error
   publish:
-    name: Publish to PyPi
+    name: Publish to PyPi and release
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
     needs: [build-sdist, build-wheel]
     strategy:
@@ -106,6 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      content: write
     environment:
       name: pypi
       url: https://pypi.org/p/remarkable_update_fuse
@@ -120,6 +121,13 @@ jobs:
         with:
           packages-dir: ${{ steps.download.outputs.download-path }}
           skip-existing: true
+      - name: Upload to release
+        run:
+          find "$FOLDER" -type -f | xargs -rI{} hub release edit --attach {} "$TAG"
+        env:
+          FOLDER: ${{ steps.download.outputs.download-path }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
   release:
     name: Add binaries to release
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
@@ -135,9 +143,8 @@ jobs:
           name: rmufuse
       - name: Upload to release
         run:
-          hub release edit \
-            --attach ${{ steps.download.outputs.download-path }}/rmufuse \
-            "$TAG"
+          find "$FOLDER" -type -f | xargs -rI{} hub release edit --attach {} "$TAG"
         env:
+          FOLDER: ${{ steps.download.outputs.download-path }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           TAG: ${{ github.event.release.tag_name }}
