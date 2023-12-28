@@ -9,6 +9,44 @@ on:
     types: [released]
 permissions: read-all
 jobs:
+  build-executable:
+    name: Build binaries ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Nuitka ccache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/.nuitka
+          key: ${{ github.job }}-ccache-${{ matrix.os }}
+      - name: Build codexctl
+        run: |
+          pip install -r requirements.txt wheel nuitka
+          mkdir -p dist
+          NUITKA_CACHE_DIR="${{ github.workspace }}/.nuitka" \
+          python -m nuitka \
+            --enable-plugin=pylint-warnings \
+            --onefile \
+            --lto=yes \
+            --static-libpython=yes \
+            --assume-yes-for-downloads \
+            --remove-output \
+            --output-dir=dist \
+            --output-filename=rmufuse \
+            remarkable_update_fuse/__main__.py
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}
+          path: dist
+          if-no-files-found: error
   build-wheel:
     name: Build wheel with python ${{ matrix.python }}
     runs-on: ubuntu-latest
