@@ -1,0 +1,37 @@
+[project]
+name = "remarkable_update_fuse"
+version = "0.0.1"
+authors = [
+  { name="Eeems", email="eeems@eeems.email" },
+]
+description = "Userspace filesystem for remarkable update files"
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dynamic = ["dependencies", "readme"]
+
+[project.scripts]
+rmufuse = "remarkable_update_fuse.__main__:main"
+
+[tool.setuptools]
+packages = [
+    "remarkable_update_fuse",
+]
+[tool.setuptools.package-data]
+remarkable_update_fuse = ['remarkable_update_fuse/update_metadata.proto']
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+readme = {file= ["README.md"], content-type = "text/markdown"}
+
+[build-system]
+requires = ["setuptools>=42", "wheel", "nuitka", "toml"]
+build-backend = "nuitka.distutils.Build"
