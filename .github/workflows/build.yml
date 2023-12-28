@@ -45,7 +45,7 @@ jobs:
             --output-dir=dist \
             --output-filename=rmufuse \
             remarkable_update_fuse/__main__.py
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: rmufuse
           path: dist
@@ -95,7 +95,7 @@ jobs:
           path: dist/*
           if-no-files-found: error
   publish:
-    name: Publish to PyPi and release
+    name: Publish to PyPi
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
     needs: [build-sdist]
     runs-on: ubuntu-latest
@@ -116,18 +116,17 @@ jobs:
         with:
           packages-dir: ${{ steps.download.outputs.download-path }}
           skip-existing: true
-      - name: Upload to release
-        run:
-          find "$FOLDER" -type -f | xargs -rI{} hub release edit --attach {} "$TAG"
-        env:
-          FOLDER: ${{ steps.download.outputs.download-path }}
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
   release:
-    name: Add binaries to release
+    name: Add ${{ matrix.artifact }} release
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
-    needs: [build-executable]
+    needs: [build-executable build-wheel]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        artifact:
+          - 'rmufuse'
+          - 'pip-sdist'
+          - 'pip-wheel-3.11'
     permissions:
       contents: write
     steps:
@@ -135,10 +134,10 @@ jobs:
         id: download
         uses: actions/download-artifact@v4
         with:
-          name: rmufuse
+          name: ${{ matrix.artifact }}
       - name: Upload to release
         run:
-          find "$FOLDER" -type -f | xargs -rI{} hub release edit --attach {} "$TAG"
+          find "$FOLDER" -type f | xargs -rI{} hub release edit --attach {} "$TAG"
         env:
           FOLDER: ${{ steps.download.outputs.download-path }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
