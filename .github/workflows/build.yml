@@ -106,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      content: write
+      contents: write
     environment:
       name: pypi
       url: https://pypi.org/p/remarkable_update_fuse
