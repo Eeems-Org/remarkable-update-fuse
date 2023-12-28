@@ -140,5 +140,5 @@ jobs:
           find "$FOLDER" -type f | xargs -r gh release upload "$TAG" --clobber
         env:
           FOLDER: ${{ steps.download.outputs.download-path }}
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
