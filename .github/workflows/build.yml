@@ -137,7 +137,7 @@ jobs:
           name: ${{ matrix.artifact }}
       - name: Upload to release
         run:
-          find "$FOLDER" -type f | xargs -rI{} hub release edit --attach {} "$TAG"
+          find "$FOLDER" -type f | xargs -r gh release upload "$TAG" --clobber
         env:
           FOLDER: ${{ steps.download.outputs.download-path }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
