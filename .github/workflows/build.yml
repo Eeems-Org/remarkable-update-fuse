@@ -10,12 +10,16 @@ on:
 permissions: read-all
 jobs:
   build-executable:
-    name: Build binaries ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    name: Build binary for linux
+    runs-on: ubuntu-latest
     steps:
+      - name: Install Apt packages
+        id: cache-apt
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          execute_install_scripts: true
+          packages: libfuse-dev
+          version: 1.0
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -26,8 +30,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/.nuitka
-          key: ${{ github.job }}-ccache-${{ matrix.os }}
-      - name: Build codexctl
+          key: ${{ github.job }}-ccache-ubuntu-latest
+      - name: Build with nuitka
         run: |
           pip install -r requirements.txt wheel nuitka
           mkdir -p dist
