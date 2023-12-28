@@ -1,3 +1,5 @@
+[![remarkable_update_fuse on PyPI](https://img.shields.io/pypi/v/remarkable_update_fuse)](https://pypi.org/project/remarkable_update_fuse)
+
 # reMarkable Update FUSE
 Mount remarkable update files using FUSE
 
