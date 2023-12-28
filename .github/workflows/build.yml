@@ -130,6 +130,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v4
       - name: Download executable
         id: download
         uses: actions/download-artifact@v4
