@@ -139,7 +139,7 @@ jobs:
           name: ${{ matrix.artifact }}
       - name: Upload to release
         run:
-          find "$FOLDER" -type f | xargs -r gh release upload "$TAG" --clobber
+          find "$FOLDER" -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
         env:
           FOLDER: ${{ steps.download.outputs.download-path }}
           GH_TOKEN: ${{ github.token }}
