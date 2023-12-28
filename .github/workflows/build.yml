@@ -40,7 +40,6 @@ jobs:
             --enable-plugin=pylint-warnings \
             --onefile \
             --lto=yes \
-            --static-libpython=yes \
             --assume-yes-for-downloads \
             --remove-output \
             --output-dir=dist \
