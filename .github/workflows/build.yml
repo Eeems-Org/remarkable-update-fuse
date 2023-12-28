@@ -137,10 +137,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact }}
+          path: dist
       - name: Upload to release
         run:
-          find "$FOLDER" -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
+          find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
         env:
-          FOLDER: ${{ steps.download.outputs.download-path }}
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
+        working-directory: ${{ steps.download.outputs.download-path }}
