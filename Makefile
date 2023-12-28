@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := all
 VERSION := $(shell grep -m 1 version pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
 PACKAGE := $(shell grep -m 1 name pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
 CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1703028363/ubuntu-latest.zip
@@ -108,9 +109,6 @@ dev: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed
 	    .venv/mnt
 
 all: release
-
-.INTERMEDIATE: \
-	.venv/codexctl.zip
 
 .PHONY: \
 	all \

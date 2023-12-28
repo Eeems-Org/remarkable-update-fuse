@@ -1,6 +1,6 @@
 [project]
 name = "remarkable_update_fuse"
-version = "0.0.1"
+version = "1.0.0"
 authors = [
   { name="Eeems", email="eeems@eeems.email" },
 ]

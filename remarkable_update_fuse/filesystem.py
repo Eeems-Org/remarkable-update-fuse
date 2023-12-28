@@ -1,13 +1,14 @@
-import bz2
 import errno
 import fuse
 import os
 import stat
-import struct
 import sys
+import ext4
 
 from optparse import OptionParser
-from .update_metadata_pb2 import DeltaArchiveManifest
+from .image import UpdateImage
+
+# from .ext4 import Ext4Filesystem
 
 fuse.fuse_python_api = (0, 2)
 
@@ -67,10 +68,8 @@ class UpdateFS(fuse.Fuse):
     version = "%prog " + fuse.__version__
     fusage = "%prog update_file mountpoint [options]"
     dash_s_do = "setsingle"
-    update_size = -1
-    manifest = None
-    start_pos = -1
-    image_size = 0
+    image = None
+    volume = None
 
     def __init__(self, *args, **kw):
         fuse.Fuse.__init__(
@@ -80,36 +79,6 @@ class UpdateFS(fuse.Fuse):
             parser_class=FuseOptParse,
             **kw,
         )
-
-    def _read_image(self):
-        with open(self.update_file, "rb") as f:
-            magic = f.read(4)
-            if magic != b"CrAU":
-                self.fuse_error("Wrong header")
-
-            major = struct.unpack(">Q", f.read(8))[0]
-            if major != 1:
-                self.fuse_error("Unsupported version")
-
-            self.update_size = struct.unpack(">Q", f.read(8))[0]
-            data = f.read(self.update_size)
-            self.manifest = DeltaArchiveManifest.FromString(data)
-            self.start_pos = f.tell()
-
-        for chunk, offset, length, f in self.chunks:
-            self.image_size += length
-
-    @property
-    def chunks(self):
-        with open(self.update_file, "rb") as f:
-            for chunk in self.manifest.install_operations:
-                f.seek(self.start_pos + chunk.data_offset)
-                dst_offset = chunk.dst_extents[0].start_block * BLOCK_SIZE
-                dst_length = chunk.dst_extents[0].num_blocks * BLOCK_SIZE
-                if chunk.type not in (0, 1):
-                    self.fuse_error(f"Unsupported type {chunk.type}")
-
-                yield chunk, dst_offset, dst_length, f
 
     @property
     def update_file(self):
@@ -127,92 +96,74 @@ class UpdateFS(fuse.Fuse):
         if not os.path.exists(self.update_file):
             self.fuse_error(f"fuse: File does not exist {self.update_file}")
 
-        self._read_image()
+        self.image = UpdateImage(self.update_file)
+        self.volume = ext4.Volume(self.image, offset=0)
         fuse.Fuse.main(self, args)
 
-    def getattr(self, path):
+    def get_inode(self, path):
+        path = os.path.normpath(path)
         if path == "/":
-            _stat = Stat()
-            _stat.st_mode = stat.S_IFDIR | 0o755
-            _stat.st_nlink = 2
-            return _stat
+            return self.volume.root
 
-        if path == IMAGE_PATH:
-            _stat = Stat()
-            _stat.st_mode = stat.S_IFREG | 0o444
-            _stat.st_nlink = 1
-            _stat.st_size = self.image_size
-            return _stat
+        paths = []
+        while True:
+            split = os.path.split(path)
+            path = split[0]
+            if not split[1]:
+                break
 
-        return -errno.ENOENT
+            paths.insert(0, split[1])
+
+        return self.volume.root.get_inode(*paths)
+
+    def getattr(self, path):
+        try:
+            inode = self.get_inode(path)
+            _stat = Stat()
+            _stat.st_mode = inode.inode.i_mode
+            _stat.st_ino = inode.inode.i_uid_lo
+            _stat.st_nlink = inode.inode.i_links_count
+            _stat.st_uid = inode.inode.i_uid_lo
+            _stat.st_gid = inode.inode.i_gid_lo
+            _stat.st_size = inode.inode.i_size_lo
+            _stat.st_atime = inode.inode.i_atime
+            _stat.st_mtime = inode.inode.i_mtime
+            _stat.st_ctime = inode.inode.i_ctime
+            return _stat
+        except FileNotFoundError:
+            return -errno.ENOENT
 
     def readdir(self, path, offset):
-        for entry in (".", "..", IMAGE_PATH[1:]):
-            yield fuse.Direntry(entry)
+        try:
+            inode = self.get_inode(path)
+            for file_name, inode_idx, file_type in inode.open_dir():
+                yield fuse.Direntry(file_name)
+
+        except FileNotFoundError:
+            print(f"{path} not found")
+            return -errno.ENOENT
 
     def open(self, path, flags):
-        if path != IMAGE_PATH:
-            return -errno.ENOENT
+        try:
+            inode = self.get_inode(path)
+            if inode.is_dir:
+                return -errno.EACCES
 
-        mode = os.O_RDONLY | os.O_WRONLY | os.O_RDWR
-        if (flags & mode) != os.O_RDONLY:
-            return -errno.EACCES
+            mode = os.O_RDONLY | os.O_WRONLY | os.O_RDWR
+            if (flags & mode) != os.O_RDONLY:
+                return -errno.EACCES
+
+        except FileNotFoundError:
+            print(f"{path} not found")
+            return -errno.ENOENT
 
     def read(self, path, size, offset):
-        if path != IMAGE_PATH:
+        try:
+            inode = self.get_inode(path)
+            reader = inode.open_read()
+            reader.seek(offset, os.SEEK_SET)
+            return reader.read(size)
+
+        except FileNotFoundError:
+            print(f"{path} not found")
             return -errno.ENOENT
-
-        if offset >= self.image_size:
-            return b""
-
-        if offset + size > self.image_size:
-            size = self.image_size - offset
-
-        res = bytearray(size)
-        d = f"{IMAGE_PATH}[{offset}:{offset + size}]"
-        print(f"{d} read", file=sys.stderr)
-        for chunk, chunk_offset, chunk_length, f in self.chunks:
-            if offset < chunk_offset:
-                continue
-            if offset >= chunk_offset + chunk_length:
-                continue
-
-            chunk_data = f.read(chunk.data_length)
-            if chunk.type == 1:
-                try:
-                    chunk_data = bz2.decompress(chunk_data)
-
-                except ValueError as e:
-                    print(f"{d} Error: {e}", file=sys.stderr)
-                    return -errno.EIO
-
-                if chunk_length - len(chunk_data) < 0:
-                    print(
-                        f"{d} Error: Compressed data was the wrong length {len(chunk_data)}",
-                        file=sys.stderr,
-                    )
-                    return -errno.EIO
-
-            chunk_start_offset = max(offset - chunk_offset, 0)
-            chunk_end_offset = min(offset - chunk_offset + size, chunk_length - 1)
-            data = chunk_data[chunk_start_offset:chunk_end_offset]
-            print(
-                f"{d} chunk [{chunk_start_offset}:{chunk_end_offset}]", file=sys.stderr
-            )
-
-            assert chunk_start_offset >= 0
-            assert chunk_end_offset < chunk_length
-            assert chunk_end_offset - chunk_start_offset == len(data)
-
-            start_offset = chunk_offset + chunk_start_offset - offset
-            end_offset = chunk_offset + chunk_end_offset - offset
-            res[start_offset:end_offset] = data
-
-            assert start_offset >= 0
-            assert start_offset < len(res)
-            assert end_offset < chunk_offset + chunk_length
-            assert end_offset - start_offset == len(data)
-            assert end_offset <= len(res)
-            assert res[start_offset:end_offset] == data
-
-        return bytes(res)
