@@ -30,7 +30,7 @@ jobs:
         run: python -m build --wheel
       - uses: actions/upload-artifact@v4
         with:
-          name: pip
+          name: pip-wheel-${{ matrix.python }}
           path: dist/*
           if-no-files-found: error
   build-sdist:
@@ -50,11 +50,16 @@ jobs:
         run: python -m build --sdist
       - uses: actions/upload-artifact@v4
         with:
-          name: pip
+          name: pip-sdist
           path: dist/*
           if-no-files-found: error
   publish:
     name: Publish to PyPi
+    strategy:
+      matrix:
+        artifact:
+          - 'wheel-3.11'
+          - 'sdist'
     runs-on: ubuntu-latest
     needs: [build-sdist, build-wheel]
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
@@ -68,8 +73,9 @@ jobs:
         id: download
         uses: actions/download-artifact@v4
         with:
-          name: pip
+          name: pip-${{ matrix.artifact }}
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: ${{ steps.download.outputs.download-path }}
+          skip-existing: true
