@@ -18,7 +18,7 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           execute_install_scripts: true
-          packages: libfuse-dev
+          packages: libfuse-dev ccache
           version: 1.0
       - name: Checkout the Git repository
         uses: actions/checkout@v4
