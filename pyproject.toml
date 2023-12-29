@@ -26,7 +26,7 @@ packages = [
     "remarkable_update_fuse",
 ]
 [tool.setuptools.package-data]
-remarkable_update_fuse = ['remarkable_update_fuse/update_metadata.proto']
+remarkable_update_fuse = ['update_metadata.proto']
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

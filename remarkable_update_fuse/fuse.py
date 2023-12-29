@@ -150,13 +150,13 @@ class UpdateFS(fuse.Fuse):
             cache_ttl=self.cache_ttl,
         )
         self.volume = ext4.Volume(self.image, offset=0)
-        threads = self.start_cache()
+        threads = self.start_cache_threads()
         fuse.Fuse.main(self, args)
         self.exit_threads = True
-        [t.kill() for t in threads]
-        [t.join() for t in threads]
+        _ = [t.kill() for t in threads]
+        _ = [t.join() for t in threads]
 
-    def start_cache(self):
+    def start_cache_threads(self):
         if self.disable_cache:
             return []
 
