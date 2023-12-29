@@ -6,15 +6,7 @@ Mount remarkable update files using FUSE
 ```bash
 pip install remarkable_update_fuse
 mkdir /mnt/signed /mnt/image
-
-# Fully userspace
 rmufuse path/to/update_file.signed /mnt/signed
-ext4fuse /mnt/signed/image.ext4 /mnt/image
-
-# Using loopback
-# Ensure /etc/fuse.conf has user_allow_other
-rmufuse -o allow_root path/to/update_file.signed /mnt/signed
-mount /mnt/signed/image.ext4 /mnt/image
 ```
 
 ## Building

@@ -9,6 +9,7 @@ import ext4
 import fuse
 
 from .image import UpdateImage
+from .threads import KillableThread
 
 # from .ext4 import Ext4Filesystem
 
@@ -152,16 +153,17 @@ class UpdateFS(fuse.Fuse):
         threads = self.start_cache()
         fuse.Fuse.main(self, args)
         self.exit_threads = True
+        [t.kill() for t in threads]
         [t.join() for t in threads]
 
     def start_cache(self):
         if self.disable_cache:
             return []
 
-        thread = threading.Thread(
+        thread = KillableThread(
             target=self.expire_thread,
             args=(self,),
-            name=f"cache-ttl",
+            name="cache-ttl",
         )
         thread.start()
         threads = [thread]
@@ -180,7 +182,7 @@ class UpdateFS(fuse.Fuse):
             print(f"Starting {thread_count} cache threads", file=sys.stderr)
 
         for i in range(0, thread_count):
-            thread = threading.Thread(
+            thread = KillableThread(
                 target=self.cache_thread,
                 args=(self,),
                 name=f"cache-{i}",
