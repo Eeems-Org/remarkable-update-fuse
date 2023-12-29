@@ -15,9 +15,6 @@ from .threads import KillableThread
 
 fuse.fuse_python_api = (0, 2)
 
-BLOCK_SIZE = 4096
-IMAGE_PATH = "/image.ext4"
-
 
 class ImageException(Exception):
     pass
@@ -71,18 +68,16 @@ class UpdateFS(fuse.Fuse):
     version = "%prog " + fuse.__version__
     fusage = "%prog update_file mountpoint [options]"
     dash_s_do = "setsingle"
-    disable_cache = False
-    cache_threads = -1
-    cache_timeout = 10
+    disable_path_cache = False
     cache_debug = False
+    cache_size = 500
+    cache_ttl = 60
 
     image = None
     volume = None
     inode_cache = {}
     queue = None
     exit_threads = False
-    cache_size = 500
-    cache_ttl = 60
 
     def __init__(self, *args, **kw):
         fuse.Fuse.__init__(
@@ -93,20 +88,7 @@ class UpdateFS(fuse.Fuse):
             **kw,
         )
         self.parser.add_option(
-            mountopt="cache_threads",
-            default=None,
-            type="int",
-            help="Number of cache threads to create. Set to -1 to automatically determine the number"
-            "[default: -1]",
-        )
-        self.parser.add_option(
-            mountopt="cache_timeout",
-            default=10,
-            type="int",
-            help="Seconds before cache threads timeout waiting for new entries [default: %default]",
-        )
-        self.parser.add_option(
-            mountopt="disable_cache",
+            mountopt="disable_path_cache",
             action="store_true",
             help="Disable path caching",
         )
@@ -157,40 +139,13 @@ class UpdateFS(fuse.Fuse):
         _ = [t.join() for t in threads]
 
     def start_cache_threads(self):
-        if self.disable_cache:
-            return []
-
         thread = KillableThread(
             target=self.expire_thread,
             args=(self,),
             name="cache-ttl",
         )
         thread.start()
-        threads = [thread]
-
-        if self.cache_threads >= 0:
-            thread_count = int(self.cache_threads)
-        else:
-            thread_count = min(len(os.sched_getaffinity(0)), 8)
-
-        if thread_count == 0:
-            return threads
-
-        self.queue = queue.Queue()
-        self.queue.put("/")
-        if self.cache_debug:
-            print(f"Starting {thread_count} cache threads", file=sys.stderr)
-
-        for i in range(0, thread_count):
-            thread = KillableThread(
-                target=self.cache_thread,
-                args=(self,),
-                name=f"cache-{i}",
-            )
-            thread.start()
-            threads.append(thread)
-
-        return threads
+        return [thread]
 
     @staticmethod
     def path_tuple(path):
@@ -229,49 +184,12 @@ class UpdateFS(fuse.Fuse):
             prev_usage = usage
             print(f"[cache-ttl] {usage}")
 
-    # Static as it's being started by threading.Thread
-    @staticmethod
-    def cache_thread(self):
-        name = threading.current_thread().name
-        if self.cache_debug:
-            print(f"[{name}] Started", file=sys.stderr)
-
-        while not self.exit_threads:
-            try:
-                path = self.queue.get(timeout=self.cache_timeout)
-            except queue.Empty:
-                break
-
-            if path in (".", ".."):
-                continue
-
-            if self.cache_debug:
-                print(f"[{name}] Indexing: {path}", file=sys.stderr)
-
-            inode = self.get_inode(path)
-            if inode is None:
-                continue
-
-            if inode.is_dir:
-                for file_name, inode_idx, file_type in inode.open_dir():
-                    if file_type == ext4.InodeType.UNKNOWN:
-                        continue
-
-                    if file_name in (".", ".."):
-                        continue
-
-                    child_path = os.path.join(path, file_name)
-                    self.queue.put(child_path)
-
-        if self.cache_debug:
-            print(f"[{name}] Finished", file=sys.stderr)
-
     def get_inode(self, path):
         paths = UpdateFS.path_tuple(path)
         if not paths:
             return self.volume.root
 
-        if self.disable_cache:
+        if self.disable_path_cache:
             inode = self.volume.root.get_inode(*paths)
             if inode is None:
                 raise FileNotFoundError()

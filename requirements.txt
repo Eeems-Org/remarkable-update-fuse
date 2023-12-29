@@ -2,4 +2,4 @@ protobuf==3.17.0
 six==1.16.0
 fuse-python==1.0.7
 cachetools==5.3.2
-ext4 @ git+https://github.com/Eeems/python-ext4.git@e783c5268abf2a8f411eb8feeb10ca08fbd8c81b
+ext4 @ git+https://github.com/Eeems/python-ext4.git@e1aeded02b181f82539cb3c97e585681136d02a2
