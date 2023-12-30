@@ -199,6 +199,7 @@ class UpdateFS(fuse.Fuse):
         if paths not in self.inode_cache:
             inode = self.volume.root.get_inode(*paths)
             self.inode_cache[paths] = inode
+            inode.verify()
 
         inode = self.inode_cache[paths]
         if inode is None:
