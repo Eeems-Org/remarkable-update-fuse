@@ -152,12 +152,12 @@ class UpdateImage(io.RawIOBase):
         self.seek(len(res), whence=os.SEEK_CUR)
         return res
 
-    def peek(self, size=-1):
+    def peek(self, size=0):
         offset = self._pos
         if offset >= self._size:
             return b""
 
-        if size == -1 or offset + size > self._size:
+        if size <= 0 or offset + size > self._size:
             size = self._size - offset
 
         res = bytearray(size)
