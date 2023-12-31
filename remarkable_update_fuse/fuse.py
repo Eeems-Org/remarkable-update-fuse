@@ -118,10 +118,16 @@ class UpdateFS(fuse.Fuse):
 
     def fuse_error(self, msg):
         print(msg, file=sys.stderr)
-        self.parser.print_help()
+        self.fuse_args.setmod("showhelp")
+        fuse.Fuse.main(self, self.args)
         sys.exit(1)
 
     def main(self, args=None):
+        self.args = args
+        if self.fuse_args.getmod("showhelp"):
+            fuse.Fuse.main(self, args)
+            return
+
         if self.update_file is None:
             self.fuse_error("fuse: missing update_file parameter")
 

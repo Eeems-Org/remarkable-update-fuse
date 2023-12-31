@@ -69,11 +69,31 @@ sdist: dist/${PACKAGE}-${VERSION}.tar.gz
 
 wheel: dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl
 
-dist/${PACKAGE}-${VERSION}.tar.gz: $(OBJ)
+dist:
+	mkdir -p dist
+
+dist/${PACKAGE}-${VERSION}.tar.gz: dist $(OBJ)
 	python -m build --sdist
 
-dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: $(OBJ)
+dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 	python -m build --wheel
+
+
+dist/rmufuse: dist .venv/bin/activate
+	. .venv/bin/activate; \
+	pip3 install wheel nuitka; \
+	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
+	nuitka3 \
+	    --enable-plugin=pylint-warnings \
+	    --onefile \
+	    --lto=yes \
+	    --assume-yes-for-downloads \
+	    --python-flag=-m \
+	    --remove-output \
+	    --output-dir=dist \
+	    --output-filename=rmufuse \
+	    remarkable_update_fuse
+# 	    --include-package=remarkable_update_fuse \
 
 .venv/bin/activate: requirements.txt
 	@echo "Setting up development virtual env in .venv"
@@ -112,6 +132,8 @@ test: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed
 	. .venv/bin/activate; \
 	python test.py
 
+executable: .venv/bin/activate dist/rmufuse
+	dist/rmufuse --help
 
 all: release
 
@@ -120,6 +142,7 @@ all: release
 	build \
 	clean \
 	dev \
+	executable \
 	install \
 	release \
 	sdist \

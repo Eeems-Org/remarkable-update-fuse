@@ -59,22 +59,7 @@ jobs:
           path: ${{ github.workspace }}/.nuitka
           key: ${{ github.job }}-ccache-ubuntu-latest
       - name: Build with nuitka
-        run: |
-          python3 -m venv .venv
-          . .venv/bin/activate
-          pip3 install -r requirements.txt wheel nuitka
-          mkdir -p dist
-          NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
-          nuitka3 \
-            --enable-plugin=pylint-warnings \
-            --onefile \
-            --lto=yes \
-            --assume-yes-for-downloads \
-            --remove-output \
-            --output-dir=dist \
-            --output-filename=rmufuse \
-            remarkable_update_fuse/__main__.py
-          dist/rmufuse --help
+        run: make executable
       - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-ubuntu
@@ -107,22 +92,7 @@ jobs:
           key: ${{ github.job }}-ccache-ubuntu-latest
       - name: Build with nuitka
         shell: alpine.sh {0}
-        run: |
-          python3 -m venv .venv
-          . .venv/bin/activate
-          pip3 install -r requirements.txt nuitka
-          mkdir -p dist
-          NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
-          nuitka3 \
-            --enable-plugin=pylint-warnings \
-            --onefile \
-            --lto=yes \
-            --assume-yes-for-downloads \
-            --remove-output \
-            --output-dir=dist \
-            --output-filename=rmufuse \
-            remarkable_update_fuse/__main__.py
-          dist/rmufuse --help
+        run: make executable
       - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-alpine
