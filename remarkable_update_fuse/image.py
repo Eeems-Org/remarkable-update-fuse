@@ -187,4 +187,5 @@ class UpdateImage(io.RawIOBase):
             assert end_offset <= len(res)
             assert res[start_offset:end_offset] == data
 
+        assert len(res) == size
         return bytes(res)
