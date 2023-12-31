@@ -11,6 +11,11 @@ mkdir /mnt/signed /mnt/image
 rmufuse path/to/update_file.signed /mnt/signed
 ```
 
+## Known Issues
+
+- Will report checksum errors for Directory inode, even though they are fine
+- Will report checksum errors for extent headers, even though they are fine
+
 ## Programatic Usage
 
 ```python
