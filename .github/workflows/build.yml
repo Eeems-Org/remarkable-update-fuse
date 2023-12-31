@@ -60,10 +60,12 @@ jobs:
           key: ${{ github.job }}-ccache-ubuntu-latest
       - name: Build with nuitka
         run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
           pip3 install -r requirements.txt wheel nuitka
           mkdir -p dist
-          NUITKA_CACHE_DIR="${{ github.workspace }}/.nuitka" \
-          python3 -m nuitka \
+          NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
+          nuitka3 \
             --enable-plugin=pylint-warnings \
             --onefile \
             --lto=yes \
@@ -103,10 +105,12 @@ jobs:
       - name: Build with nuitka
         shell: alpine.sh {0}
         run: |
-          pip install -r requirements.txt nuitka
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip3 install -r requirements.txt nuitka
           mkdir -p dist
-          NUITKA_CACHE_DIR="${{ github.workspace }}/.nuitka" \
-          python -m nuitka \
+          NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
+          nuitka3 \
             --enable-plugin=pylint-warnings \
             --onefile \
             --lto=yes \
