@@ -89,7 +89,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/.nuitka
-          key: ${{ github.job }}-ccache-ubuntu-latest
+          key: ${{ github.job }}-ccache-alpine-v3.18
       - name: Build with nuitka
         shell: alpine.sh {0}
         run: make executable
