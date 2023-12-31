@@ -20,9 +20,7 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
       - name: Run tests
-        run: |
-          pip install -r requirements.txt
-          python test.py
+        run: make test
   build-executable:
     name: Build binary for linux
     needs: [test]
@@ -84,7 +82,7 @@ jobs:
       - name: Install build tool
         run: pip install build
       - name: Building package
-        run: python -m build --wheel
+        run: make wheel
       - uses: actions/upload-artifact@v4
         with:
           name: pip-wheel-${{ matrix.python }}
@@ -105,7 +103,7 @@ jobs:
       - name: Install build tool
         run: pip install build
       - name: Building package
-        run: python -m build --sdist
+        run: make sdist
       - uses: actions/upload-artifact@v4
         with:
           name: pip-sdist
