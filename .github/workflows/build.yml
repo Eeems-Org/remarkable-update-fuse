@@ -35,8 +35,8 @@ jobs:
           key: test-files-${{ hashFiles('Makefile') }}
       - name: Run tests
         run: make test
-  build-executable:
-    name: Build binary for linux
+  build-executable-ubuntu:
+    name: Build binary for ubuntu
     needs: [test]
     runs-on: ubuntu-latest
     steps:
@@ -74,7 +74,50 @@ jobs:
             remarkable_update_fuse/__main__.py
       - uses: actions/upload-artifact@v4
         with:
-          name: rmufuse
+          name: rmufuse-ubuntu
+          path: dist
+          if-no-files-found: error
+  build-executable-alpine:
+    name: Build binary for alpine
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v4
+      - uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.18
+          package: >
+            build-base
+            python3
+            python3-dev
+            py3-pip
+            py3-wheel
+            ccache
+            fuse3-dev
+      - name: Nuitka ccache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/.nuitka
+          key: ${{ github.job }}-ccache-ubuntu-latest
+      - name: Build with nuitka
+        shell: alpine.sh {0}
+        run: |
+          pip install -r requirements.txt nuitka
+          mkdir -p dist
+          NUITKA_CACHE_DIR="${{ github.workspace }}/.nuitka" \
+          python -m nuitka \
+            --enable-plugin=pylint-warnings \
+            --onefile \
+            --lto=yes \
+            --assume-yes-for-downloads \
+            --remove-output \
+            --output-dir=dist \
+            --output-filename=rmufuse \
+            remarkable_update_fuse/__main__.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rmufuse-alpine
           path: dist
           if-no-files-found: error
   build-wheel:
@@ -148,12 +191,13 @@ jobs:
   release:
     name: Add ${{ matrix.artifact }} release
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
-    needs: [build-executable, build-wheel, build-sdist]
+    needs: [build-executable-ubuntu, build-executable-alpine, build-wheel, build-sdist]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         artifact:
-          - 'rmufuse'
+          - 'rmufuse-ubuntu'
+          - 'rmufuse-alpine'
           - 'pip-sdist'
           - 'pip-wheel-3.11'
     permissions:
