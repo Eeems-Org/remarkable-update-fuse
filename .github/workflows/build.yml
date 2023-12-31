@@ -26,6 +26,13 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+      - name: Cache test files
+        uses: actions/cache@v3
+        with:
+          path: |
+            .venv/bin/codexctl.bin
+            .venv/*_reMarkable2-*.signed
+          key: ${{ hashFiles('Makefile') }}
       - name: Run tests
         run: make test
   build-executable:
