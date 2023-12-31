@@ -97,6 +97,7 @@ jobs:
             py3-wheel
             ccache
             fuse3-dev
+            git
       - name: Nuitka ccache
         uses: actions/cache@v3
         with:
