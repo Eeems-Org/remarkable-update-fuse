@@ -98,6 +98,7 @@ jobs:
             ccache
             fuse-dev
             git
+            patchelf
       - name: Nuitka ccache
         uses: actions/cache@v3
         with:
