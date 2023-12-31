@@ -85,11 +85,11 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: $(OBJ)
 	curl -L "${CODEXCTL}" -o .venv/codexctl.zip
 
 .venv/bin/codexctl.bin: .venv/codexctl.zip
-	@if ! sha256sum -c <(echo "${CODEXCTL_HASH} .venv/codexctl.zip") > /dev/null 2>&1; then \
+	@bash -c 'if ! sha256sum -c <(echo "${CODEXCTL_HASH} .venv/codexctl.zip") > /dev/null 2>&1; then \
 	    echo "Hash mismatch, removing invalid codexctl.zip"; \
 	    rm .venv/codexctl.zip; \
 	    exit 1; \
-	fi
+	fi'
 	unzip -n .venv/codexctl.zip -d .venv/bin
 	chmod +x .venv/bin/codexctl.bin
 
