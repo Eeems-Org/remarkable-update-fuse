@@ -3,8 +3,8 @@ import sys
 
 from ext4 import Volume
 from hashlib import md5
-from rsa.pkcs1 import VerificationError
 from remarkable_update_fuse import UpdateImage
+from remarkable_update_fuse import UpdateImageSignatureException
 
 failed = False
 
