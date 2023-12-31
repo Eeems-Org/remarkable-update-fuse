@@ -108,6 +108,11 @@ dev: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed
 	    .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed \
 	    .venv/mnt
 
+test: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed
+	. .venv/bin/activate; \
+	python test.py
+
+
 all: release
 
 .PHONY: \
@@ -118,4 +123,5 @@ all: release
 	install \
 	release \
 	sdist \
-	wheel
+	wheel \
+	test

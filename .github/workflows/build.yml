@@ -9,8 +9,23 @@ on:
     types: [released]
 permissions: read-all
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Run tests
+        run: |
+          pip install -r requirements.txt
+          python test.py
   build-executable:
     name: Build binary for linux
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Install Apt packages
@@ -52,6 +67,7 @@ jobs:
           if-no-files-found: error
   build-wheel:
     name: Build wheel with python ${{ matrix.python }}
+    needs: [test]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -76,6 +92,7 @@ jobs:
           if-no-files-found: error
   build-sdist:
     name: Build sdist
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the Git repository
