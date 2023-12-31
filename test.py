@@ -70,24 +70,8 @@ assert_byte(0x00020000, b"\x0c")
 assert_byte(0x00020001, b"\x60")
 assert_byte(0x00020002, b"\x9d")
 
-
-def fn():
-    with open(".venv/2.15.1.1189_reMarkable2-wVbHkgKisg-.ext4", "rb") as f:
-        volume = Volume(f)
-        inode = volume.root.get_inode("bin", "bash.bash")
-        reader = inode.open_read()
-        reader.seek(0x000BBFFF)
-        block_index = reader.cursor // volume.block_size
-        block_offset = reader.get_block_mapping(block_index) * volume.block_size
-        offset = block_offset + (reader.cursor % volume.block_size)
-        f.seek(volume.offset + offset)
-        print(f"  Info: Direct read: {to_hex(f.read(1))}")
-        print(f"  Info: Volume read: {to_hex(volume.read(offset, 1))}")
-
-
 # Make sure we return a non-zero where a kernel loopback would return data
 assert_byte(0x000BBFFF, b"\xe5")
-fn()
 assert_byte(0x000BC000, b"\x54")
 
 assert_hash("68f0a9db4c3cfce9e96c82250587fe1b", "bin", "bash.bash")

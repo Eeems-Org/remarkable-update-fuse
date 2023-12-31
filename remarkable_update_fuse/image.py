@@ -228,11 +228,11 @@ class UpdateImage(io.RawIOBase):
 
             blob_data = self._read_blob(blob, blob_offset, blob_length, f)
             blob_start_offset = max(offset - blob_offset, 0)
-            blob_end_offset = min(offset - blob_offset + size, blob_length - 1)
+            blob_end_offset = min(offset - blob_offset + size, blob_length)
             data = blob_data[blob_start_offset:blob_end_offset]
 
             assert blob_start_offset >= 0
-            assert blob_end_offset < blob_length
+            assert blob_end_offset <= blob_length
             assert blob_end_offset - blob_start_offset == len(data)
 
             start_offset = blob_offset + blob_start_offset - offset

@@ -3,4 +3,4 @@ cryptography==41.0.7
 fuse-python==1.0.7
 protobuf==4.21.1
 six==1.16.0
-ext4 @ git+https://github.com/Eeems/python-ext4.git@ccb6b2f96ce4afec857ff469b269d1f2e93e6d09
+ext4 @ git+https://github.com/Eeems/python-ext4.git@5a5b2e800220b281ef8cdb5fbbbe06716a5ea5ef

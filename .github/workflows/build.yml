@@ -32,7 +32,7 @@ jobs:
           path: |
             .venv/bin/codexctl.bin
             .venv/*_reMarkable2-*.signed
-          key: ${{ hashFiles('Makefile') }}
+          key: test-files-${{ hashFiles('Makefile') }}
       - name: Run tests
         run: make test
   build-executable:
