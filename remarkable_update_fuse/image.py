@@ -6,7 +6,14 @@ import sys
 import time
 
 from cachetools import TTLCache
+from hashlib import sha256
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
+from cryptography.hazmat.primitives.hashes import SHA256
 from .update_metadata_pb2 import DeltaArchiveManifest
+from .update_metadata_pb2 import InstallOperation
+from .update_metadata_pb2 import Signatures
 
 BLOCK_SIZE = 4096
 
@@ -40,6 +47,13 @@ class UpdateImageException(Exception):
     pass
 
 
+class UpdateImageSignatureException(UpdateImageException):
+    def __init__(self, message, signed_hash, actual_hash):
+        super().__init__(self, message)
+        self.signed_hash = signed_hash
+        self.actual_hash = actual_hash
+
+
 class UpdateImage(io.RawIOBase):
     _manifest = None
     _offset = -1
@@ -67,46 +81,91 @@ class UpdateImage(io.RawIOBase):
             self._manifest = DeltaArchiveManifest.FromString(data)
             self._offset = f.tell()
 
-        for chunk, offset, length, f in self._chunks:
+        for blob, offset, length, f in self._blobs:
             self._size += length
 
-    @property
-    def _chunks(self):
+    def verify(self, publickey):
+        _publickey = load_pem_public_key(publickey)
         with open(self.update_file, "rb") as f:
-            for chunk in self._manifest.install_operations:
-                f.seek(self._offset + chunk.data_offset)
-                dst_offset = chunk.dst_extents[0].start_block * BLOCK_SIZE
-                dst_length = chunk.dst_extents[0].num_blocks * BLOCK_SIZE
-                if chunk.type not in (0, 1):
-                    raise UpdateImageException(f"Unsupported type {chunk.type}")
+            data = f.read(self._offset + self._manifest.signatures_offset)
 
-                yield chunk, dst_offset, dst_length, f
+        actual_hash = sha256(data).digest()
+        signed_hash = _publickey.recover_data_from_signature(
+            self.signature,
+            PKCS1v15(),
+            SHA256,
+        )
+        if actual_hash != signed_hash:
+            raise UpdateImageSignatureException(
+                "Actual hash does not match signed hash", signed_hash, actual_hash
+            )
+
+    @property
+    def signature(self):
+        for signature in self._signatures:
+            if signature.version == 2:
+                return signature.data
+
+        return None
+
+    @property
+    def _signatures(self):
+        with open(self.update_file, "rb") as f:
+            f.seek(self._offset + self._manifest.signatures_offset)
+            for signature in Signatures.FromString(
+                f.read(self._manifest.signatures_size)
+            ).signatures:
+                yield signature
+
+    @property
+    def _blobs(self):
+        with open(self.update_file, "rb") as f:
+            for blob in self._manifest.partition_operations:
+                f.seek(self._offset + blob.data_offset)
+                dst_offset = blob.dst_extents[0].start_block * BLOCK_SIZE
+                dst_length = blob.dst_extents[0].num_blocks * BLOCK_SIZE
+                if blob.type not in (0, 1):
+                    raise UpdateImageException(f"Unsupported type {blob.type}")
+
+                yield blob, dst_offset, dst_length, f
 
         self.expire()
 
-    def _read_chunk(self, chunk, chunk_offset, chunk_length, f):
-        if chunk_offset in self._cache:
-            return self._cache[chunk_offset]
+    def _read_blob(self, blob, blob_offset, blob_length, f):
+        if blob_offset in self._cache:
+            return self._cache[blob_offset]
 
-        chunk_data = f.read(chunk.data_length)
-        if chunk.type == 1:
+        if blob.type not in (
+            InstallOperation.Type.REPLACE,
+            InstallOperation.Type.REPLACE_BZ,
+        ):
+            raise NotImplementedError(
+                f"Error: {InstallOperation.Type.keys()[blob.type]} has not been implemented yet"
+            )
+
+        blob_data = f.read(blob.data_length)
+        if sha256(blob_data).digest() != blob.data_sha256_hash:
+            raise UpdateImageException("Error: Data has wrong sha256sum")
+
+        if blob.type == InstallOperation.Type.REPLACE_BZ:
             try:
-                chunk_data = bz2.decompress(chunk_data)
+                blob_data = bz2.decompress(blob_data)
 
             except ValueError as err:
                 raise UpdateImageException(f"Error: {err}") from err
 
-            if chunk_length - len(chunk_data) < 0:
+            if blob_length - len(blob_data) < 0:
                 raise UpdateImageException(
-                    f"Error: Compressed data was the wrong length {len(chunk_data)}"
+                    f"Error: Bz2 compressed data was the wrong length {len(blob_data)}"
                 )
+
         try:
-            self._cache[chunk_offset] = chunk_data
+            self._cache[blob_offset] = blob_data
         except ValueError as err:
             if str(err) != "value too large":
                 raise err
 
-        return chunk_data
+        return blob_data
 
     @property
     def cache(self):
@@ -161,28 +220,28 @@ class UpdateImage(io.RawIOBase):
             size = self._size - offset
 
         res = bytearray(size)
-        for chunk, chunk_offset, chunk_length, f in self._chunks:
-            if offset < chunk_offset:
+        for blob, blob_offset, blob_length, f in self._blobs:
+            if offset < blob_offset:
                 continue
-            if offset >= chunk_offset + chunk_length:
+            if offset >= blob_offset + blob_length:
                 continue
 
-            chunk_data = self._read_chunk(chunk, chunk_offset, chunk_length, f)
-            chunk_start_offset = max(offset - chunk_offset, 0)
-            chunk_end_offset = min(offset - chunk_offset + size, chunk_length - 1)
-            data = chunk_data[chunk_start_offset:chunk_end_offset]
+            blob_data = self._read_blob(blob, blob_offset, blob_length, f)
+            blob_start_offset = max(offset - blob_offset, 0)
+            blob_end_offset = min(offset - blob_offset + size, blob_length - 1)
+            data = blob_data[blob_start_offset:blob_end_offset]
 
-            assert chunk_start_offset >= 0
-            assert chunk_end_offset < chunk_length
-            assert chunk_end_offset - chunk_start_offset == len(data)
+            assert blob_start_offset >= 0
+            assert blob_end_offset < blob_length
+            assert blob_end_offset - blob_start_offset == len(data)
 
-            start_offset = chunk_offset + chunk_start_offset - offset
-            end_offset = chunk_offset + chunk_end_offset - offset
+            start_offset = blob_offset + blob_start_offset - offset
+            end_offset = blob_offset + blob_end_offset - offset
             res[start_offset:end_offset] = data
 
             assert start_offset >= 0
             assert start_offset < len(res)
-            assert end_offset < chunk_offset + chunk_length
+            assert end_offset < blob_offset + blob_length
             assert end_offset - start_offset == len(data)
             assert end_offset <= len(res)
             assert res[start_offset:end_offset] == data

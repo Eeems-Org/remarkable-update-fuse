@@ -4,11 +4,13 @@ import queue
 import sys
 import threading
 import time
+import warnings
 
 import ext4
 import fuse
 
 from .image import UpdateImage
+from .image import UpdateImageSignatureException
 from .threads import KillableThread
 
 # from .ext4 import Ext4Filesystem
@@ -132,6 +134,16 @@ class UpdateFS(fuse.Fuse):
             cache_ttl=self.cache_ttl,
         )
         self.volume = ext4.Volume(self.image, offset=0)
+        print("Verifying signature...")
+        try:
+            self.image.verify(
+                self.get_inode("/usr/share/update_engine/update-payload-key.pub.pem")
+                .open_read()
+                .read()
+            )
+        except UpdateImageSignatureException:
+            warnings.warn("Signature doesn't match contents", RuntimeWarning)
+
         threads = self.start_cache_threads()
         fuse.Fuse.main(self, args)
         self.exit_threads = True
