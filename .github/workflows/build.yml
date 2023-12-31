@@ -60,10 +60,10 @@ jobs:
           key: ${{ github.job }}-ccache-ubuntu-latest
       - name: Build with nuitka
         run: |
-          pip install -r requirements.txt wheel nuitka
+          pip3 install -r requirements.txt wheel nuitka
           mkdir -p dist
           NUITKA_CACHE_DIR="${{ github.workspace }}/.nuitka" \
-          python -m nuitka \
+          python3 -m nuitka \
             --enable-plugin=pylint-warnings \
             --onefile \
             --lto=yes \
