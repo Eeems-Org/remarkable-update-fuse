@@ -59,7 +59,7 @@ try:
         .read()
     )
     print("pass")
-except VerificationError:
+except UpdateImageSignatureException:
     print("fail")
 
 inode = volume.root.get_inode("bin", "bash.bash")
