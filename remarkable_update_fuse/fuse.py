@@ -141,6 +141,7 @@ class UpdateFS(fuse.Fuse):
                 .open_read()
                 .read()
             )
+            print("Signature verified")
         except UpdateImageSignatureException:
             warnings.warn("Signature doesn't match contents", RuntimeWarning)
 
