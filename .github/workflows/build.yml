@@ -74,6 +74,7 @@ jobs:
             --output-dir=dist \
             --output-filename=rmufuse \
             remarkable_update_fuse/__main__.py
+          dist/rmufuse --help
       - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-ubuntu
@@ -121,6 +122,7 @@ jobs:
             --output-dir=dist \
             --output-filename=rmufuse \
             remarkable_update_fuse/__main__.py
+          dist/rmufuse --help
       - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-alpine
