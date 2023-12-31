@@ -14,8 +14,7 @@ rmufuse path/to/update_file.signed /mnt/signed
 ## Programatic Usage
 
 ```python
-import ext4
-
+from ext4 import Volume
 from remarkable_update_fuse import UpdateImage
 
 image = UpdateImage("path/to/update/file.signed")
@@ -25,7 +24,7 @@ with open("image.ext4", "wb") as f:
     f.write(image.read())
 
 # Extract specific file
-volume = ext4.Volume(image, offset=0)
+volume = Volume(image, offset=0)
 inode = volume.root.get_inode("etc", "version")
 with open("version", "wb") as f:
     f.write(inode.open_read().read())
