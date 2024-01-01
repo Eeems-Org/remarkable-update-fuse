@@ -5,7 +5,6 @@ from ctypes import c_uint32
 from ctypes import c_uint16
 from crcmod import mkCrcFun
 
-from .enum import TypedCEnumeration
 from .struct import Ext4Struct
 from .enum import EXT4_OS
 from .enum import EXT4_FL
@@ -171,18 +170,12 @@ class Inode(Ext4Struct):
         )
         if self.has_hi:
             offset = Inode.i_checksum_hi.offset
-            csum = crc32c(
-                data[self.EXT2_GOOD_OLD_INODE_SIZE : offset],
-                csum,
-            )
+            csum = crc32c(data[self.EXT2_GOOD_OLD_INODE_SIZE : offset], csum)
             if self.fits_in_hi:
                 csum = crc32c(b"\0" * Inode.i_checksum_hi.size, csum)
                 offset += Inode.i_checksum_hi.size
 
-            csum = crc32c(
-                data[offset:],
-                csum,
-            )
+            csum = crc32c(data[offset:], csum)
 
         if not self.has_hi:
             csum &= 0xFFFF
@@ -201,3 +194,7 @@ class Inode(Ext4Struct):
             provided_csum |= self.i_checksum_hi << 16
 
         return provided_csum
+
+    @property
+    def is_inline(self):
+        return (self.i_flags & EXT4_FL.EXTENTS) == 0
