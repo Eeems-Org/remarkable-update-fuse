@@ -5,12 +5,9 @@ from ext4 import Volume
 from hashlib import md5
 from remarkable_update_fuse import UpdateImage
 from remarkable_update_fuse import UpdateImageSignatureException
+from remarkable_update_fuse.ext4.struct import to_hex
 
 failed = False
-
-
-def to_hex(data):
-    return "0x" + "".join([f"{x:02X}" for x in data])
 
 
 def assert_byte(offset, byte):
@@ -79,3 +76,10 @@ assert_hash("68f0a9db4c3cfce9e96c82250587fe1b", "bin", "bash.bash")
 
 if failed:
     sys.exit(1)
+
+
+from remarkable_update_fuse import ext4
+
+volume = ext4.Volume(UpdateImage(".venv/2.15.1.1189_reMarkable2-wVbHkgKisg-.signed"))
+print(volume.uuid)
+volume.root.validate()
