@@ -18,7 +18,7 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           execute_install_scripts: true
-          packages: libfuse-dev
+          packages: libfuse-dev protobuf-compiler
           version: 1.0
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           execute_install_scripts: true
-          packages: libfuse-dev ccache
+          packages: libfuse-dev ccache protobuf-compiler
           version: 1.0
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -85,6 +85,7 @@ jobs:
             fuse-dev
             git
             patchelf
+            protoc
       - name: Nuitka ccache
         uses: actions/cache@v3
         with:
