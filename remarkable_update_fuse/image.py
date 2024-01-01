@@ -15,8 +15,6 @@ from .update_metadata_pb2 import DeltaArchiveManifest
 from .update_metadata_pb2 import InstallOperation
 from .update_metadata_pb2 import Signatures
 
-BLOCK_SIZE = 4096
-
 
 def sizeof_fmt(num, suffix="B"):
     for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
@@ -101,6 +99,10 @@ class UpdateImage(io.RawIOBase):
             )
 
     @property
+    def block_size(self):
+        return self._manifest.block_size
+
+    @property
     def signature(self):
         for signature in self._signatures:
             if signature.version == 2:
@@ -122,8 +124,8 @@ class UpdateImage(io.RawIOBase):
         with open(self.update_file, "rb") as f:
             for blob in self._manifest.partition_operations:
                 f.seek(self._offset + blob.data_offset)
-                dst_offset = blob.dst_extents[0].start_block * BLOCK_SIZE
-                dst_length = blob.dst_extents[0].num_blocks * BLOCK_SIZE
+                dst_offset = blob.dst_extents[0].start_block * self.block_size
+                dst_length = blob.dst_extents[0].num_blocks * self.block_size
                 if blob.type not in (0, 1):
                     raise UpdateImageException(f"Unsupported type {blob.type}")
 
