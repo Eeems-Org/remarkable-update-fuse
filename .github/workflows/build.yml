@@ -18,8 +18,12 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           execute_install_scripts: true
-          packages: libfuse-dev protobuf-compiler
+          packages: libfuse-dev
           version: 1.0
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "25.x"
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -45,8 +49,12 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           execute_install_scripts: true
-          packages: libfuse-dev ccache protobuf-compiler
+          packages: libfuse-dev ccache
           version: 1.0
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "25.x"
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -115,6 +123,10 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: 'pip'
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "25.x"
       - name: Install build tool
         run: pip install build
       - name: Building package
@@ -136,6 +148,10 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "25.x"
       - name: Install build tool
         run: pip install build
       - name: Building package
