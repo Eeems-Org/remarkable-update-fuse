@@ -83,7 +83,7 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 	python -m build --wheel
 
 
-dist/rmufuse: dist .venv/bin/activate
+dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	. .venv/bin/activate; \
 	pip3 install wheel nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
