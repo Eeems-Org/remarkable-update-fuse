@@ -18,6 +18,7 @@ from .enum import EXT4_CHKSUM
 from .enum import EXT4_MOUNT
 from .enum import FS_ENCRYPTION_MODE
 from .struct import Ext4Struct
+from .struct import crc32c
 
 
 class Superblock(Ext4Struct):
@@ -133,3 +134,10 @@ class Superblock(Ext4Struct):
     @property
     def magic(self):
         return self.s_magic
+
+    @property
+    def seed(self):
+        if self.s_feature_incompat & EXT4_FEATURE_INCOMPAT.CSUM_SEED != 0:
+            return self.s_checksum_seed
+
+        return crc32c(bytes(self.s_uuid))

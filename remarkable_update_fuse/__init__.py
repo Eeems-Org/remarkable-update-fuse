@@ -1,4 +1,5 @@
 from . import proto
+from . import ext4
 from .fuse import ImageException
 from .fuse import UpdateFS
 from .image import UpdateImage

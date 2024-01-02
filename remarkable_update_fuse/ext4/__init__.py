@@ -34,4 +34,10 @@ from .inode import Inode
 from .volume import Volume
 from .volume import InvalidStreamException
 
+from .extent import Extent
+from .extent import ExtentHeader
+from .extent import ExtentIndex
+from .extent import ExtentTail
+
 from .struct import MagicError
+from .struct import ChecksumError

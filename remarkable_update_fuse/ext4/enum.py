@@ -44,11 +44,41 @@ def TypedCEnumeration(_type):
 
             return isinstance(self, type(other)) and self.value == other.value
 
+        def __ne__(self, other):
+            if isinstance(other, int):
+                return self.value != other
+
+            return isinstance(self, type(other)) and self.value != other.value
+
         def __and__(self, other):
             if isinstance(other, int):
                 return self.value & other
 
             return isinstance(self, type(other)) and self.value & other.value
+
+        def __gt__(self, other):
+            if isinstance(other, int):
+                return self.value > other
+
+            return isinstance(self, type(other)) and self.value > other.value
+
+        def __lt__(self, other):
+            if isinstance(other, int):
+                return self.value < other
+
+            return isinstance(self, type(other)) and self.value < other.value
+
+        def __ge__(self, other):
+            if isinstance(other, int):
+                return self.value > other
+
+            return isinstance(self, type(other)) and self.value > other.value
+
+        def __le__(self, other):
+            if isinstance(other, int):
+                return self.value <= other
+
+            return isinstance(self, type(other)) and self.value <= other.value
 
         # TODO Add the rest
         #  See https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types
@@ -297,3 +327,16 @@ class EXT4_FL(TypedCEnumeration(c_uint32)):
     PROJINHERIT = 0x20000000  # Create with parents projid
     CASEFOLD = 0x40000000  # Casefolded directory
     RESERVED = 0x80000000  # reserved for ext4 lib
+
+
+class EXT4_FT(TypedCEnumeration(c_uint8)):
+    UNKNOWN = 0
+    REG_FILE = 1
+    DIR = 2
+    CHRDEV = 3
+    BLKDEV = 4
+    FIFO = 5
+    SOCK = 6
+    SYMLINK = 7
+    MAX = 8
+    DIR_CSUM = 0xDE

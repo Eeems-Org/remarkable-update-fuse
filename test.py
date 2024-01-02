@@ -74,12 +74,34 @@ assert_byte(0x000BC000, b"\x54")
 assert_hash("68f0a9db4c3cfce9e96c82250587fe1b", "bin", "bash.bash")
 
 
-if failed:
-    sys.exit(1)
-
-
 from remarkable_update_fuse import ext4
+from remarkable_update_fuse.ext4 import ChecksumError
+
+
+def assert_exists(path):
+    global volume
+    print(f"checking that {path} exists: ", end="")
+    try:
+        volume.inode_at(path)
+        print("pass")
+    except FileNotFoundError:
+        print("fail")
+        failed = True
+
 
 volume = ext4.Volume(UpdateImage(".venv/2.15.1.1189_reMarkable2-wVbHkgKisg-.signed"))
-print(volume.uuid)
-volume.root.validate()
+print(f"validating {volume.uuid}: ", end="")
+try:
+    volume.root.validate()
+    print("pass")
+
+except ChecksumError:
+    print("fail")
+    failed = True
+
+assert_exists("/bin/bash.bash")
+assert_exists("/uboot-version")
+assert_exists("/home/root")
+
+if failed:
+    sys.exit(1)
