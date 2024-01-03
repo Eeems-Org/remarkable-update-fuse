@@ -89,6 +89,8 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	nuitka3 \
 	    --enable-plugin=pylint-warnings \
+	    --enable-plugin=upx \
+	    --warn-implicit-exceptions \
 	    --onefile \
 	    --lto=yes \
 	    --assume-yes-for-downloads \

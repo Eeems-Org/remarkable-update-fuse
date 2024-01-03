@@ -107,6 +107,32 @@ jobs:
           name: rmufuse-alpine
           path: dist
           if-no-files-found: error
+  build-executable-remarkable:
+    name: Build binary for reMarkable
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v4
+      - name: Build
+        uses: Eeems-Org/remarkable-nuitka-build-action@v2
+        with:
+          main: remarkable_update_fuse
+          python_version: '3.11'
+          extra_flags: |
+            --assume-yes-for-downloads
+            --warn-implicit-exceptions
+            --warn-unusual-code
+            --remove-output
+            --enable-plugin=pylint-warnings
+            --enable-plugin=upx
+            --python-flag=-m
+            --output-filename=rmufuse
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rmufuse-remarkable
+          path: dist
+          if-no-files-found: error
   build-wheel:
     name: Build wheel with python ${{ matrix.python }}
     needs: [test]
@@ -186,13 +212,19 @@ jobs:
   release:
     name: Add ${{ matrix.artifact }} to release
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
-    needs: [build-executable-ubuntu, build-executable-alpine, build-wheel, build-sdist]
+    needs:
+      - build-executable-ubuntu
+      - build-executable-alpine
+      - build-executable-remarkable
+      - build-wheel
+      - build-sdist
     runs-on: ubuntu-latest
     strategy:
       matrix:
         artifact:
           - 'rmufuse-ubuntu'
           - 'rmufuse-alpine'
+          - 'rmufuse-remarkable'
           - 'pip-sdist'
           - 'pip-wheel-3.11'
     permissions:
