@@ -122,14 +122,18 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/.nuitka
-          key: ${{ github.job }}-ccache-ubuntu-latest
+          key: ${{ github.job }}-ccache-remarkable-2.15.1
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build with nuitka
         run: |
           docker run \
             --rm \
             --platform=linux/arm/v7 \
             -v "${src_path}":/src \
-            eeems/nuitka-arm-builder:bullseye-${{ inputs.python_version }} \
+            eeems/nuitka-arm-builder:bullseye-3.11 \
             bash -ec "$script"
         env:
           src_path: ${{ github.workspace }}
