@@ -99,7 +99,6 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	    --output-dir=dist \
 	    --output-filename=rmufuse \
 	    remarkable_update_fuse
-# 	    --include-package=remarkable_update_fuse \
 
 .venv/bin/activate: requirements.txt
 	@echo "Setting up development virtual env in .venv"

@@ -114,20 +114,30 @@ jobs:
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
-      - name: Build
-        uses: Eeems-Org/remarkable-nuitka-build-action@v2
+      - uses: actions/setup-python@v4
         with:
-          main: remarkable_update_fuse
-          python_version: '3.11'
-          extra_flags: |
-            --assume-yes-for-downloads
-            --warn-implicit-exceptions
-            --warn-unusual-code
-            --remove-output
-            --enable-plugin=pylint-warnings
-            --enable-plugin=upx
-            --python-flag=-m
-            --output-filename=rmufuse
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Nuitka ccache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/.nuitka
+          key: ${{ github.job }}-ccache-ubuntu-latest
+      - name: Build with nuitka
+        run: |
+          docker run \
+            --rm \
+            --platform=linux/arm/v7 \
+            -v "${src_path}":/src \
+            eeems/nuitka-arm-builder:bullseye-${{ inputs.python_version }} \
+            bash -ec "$script"
+        env:
+          src_path: ${{ github.workspace }}
+          script: |
+            apt update
+            apt install libfuse-dev
+            cd /src
+            make executable
       - uses: actions/upload-artifact@v3
         with:
           name: rmufuse-remarkable
