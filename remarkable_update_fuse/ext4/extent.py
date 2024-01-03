@@ -40,17 +40,13 @@ class ExtentBlocks(object):
         return self.ee_block <= ee_block < self.ee_block + self.ee_len
 
     def __getitem__(self, ee_block):
-        if ee_block not in self:
-            return None
-
         block_size = self.block_size
-        if not self.is_initialized:
+        if not self.is_initialized or ee_block not in self:
             # Uninitialized
-            return b"\0" * block_size * self.ee_len
+            return bytearray(block_size)
 
-        self.volume.seek(
-            (self.ee_start * block_size) + ((self.ee_block - ee_block) * block_size)
-        )
+        disk_block = self.ee_start + (ee_block - self.ee_block)
+        self.volume.seek(disk_block * block_size)
         return self.volume.read(block_size)
 
     def __iter__(self):

@@ -40,7 +40,7 @@ class BlockIOBlocks(object):
             if ee_block in extent.blocks:
                 return extent.blocks[ee_block]
 
-        return None
+        return bytearray(self.block_size)
 
 
 class BlockIO(io.RawIOBase):

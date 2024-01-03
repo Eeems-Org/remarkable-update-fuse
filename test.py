@@ -71,7 +71,15 @@ assert_byte(0x00020002, b"\x9d")
 assert_byte(0x000BBFFF, b"\xe5")
 assert_byte(0x000BC000, b"\x54")
 
+assert_hash("f33ff883cb5c36aa7ec7f5f4c1e24133", "uboot-version")
 assert_hash("68f0a9db4c3cfce9e96c82250587fe1b", "bin", "bash.bash")
+assert_hash(
+    "6a67b9873c57fbb8589ef4a4f744beb3",
+    "usr",
+    "share",
+    "update_engine",
+    "update-payload-key.pub.pem",
+)
 
 
 from remarkable_update_fuse import ext4
@@ -89,6 +97,20 @@ def assert_exists(path):
         failed = True
 
 
+def assert_hash(expected_hash, path):
+    global failed
+    print(f"checking {path} md5sum is {expected_hash}: ", end="")
+    inode = volume.inode_at(path)
+    actual_hash = md5(inode.open().read()).hexdigest()
+    if actual_hash != expected_hash:
+        print("fail")
+        print(f"  Error: Hash returned is {actual_hash}")
+        failed = True
+        return
+
+    print("pass")
+
+
 volume = ext4.Volume(UpdateImage(".venv/2.15.1.1189_reMarkable2-wVbHkgKisg-.signed"))
 print(f"validating {volume.uuid}: ", end="")
 try:
@@ -102,6 +124,11 @@ except ChecksumError:
 assert_exists("/bin/bash.bash")
 assert_exists("/uboot-version")
 assert_exists("/home/root")
-
+assert_hash("f33ff883cb5c36aa7ec7f5f4c1e24133", "/uboot-version")
+assert_hash("68f0a9db4c3cfce9e96c82250587fe1b", "/bin/bash.bash")
+assert_hash(
+    "6a67b9873c57fbb8589ef4a4f744beb3",
+    "/usr/share/update_engine/update-payload-key.pub.pem",
+)
 if failed:
     sys.exit(1)
