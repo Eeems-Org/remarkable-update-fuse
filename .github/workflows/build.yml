@@ -184,7 +184,7 @@ jobs:
           packages-dir: ${{ steps.download.outputs.download-path }}
           skip-existing: true
   release:
-    name: Add ${{ matrix.artifact }} release
+    name: Add ${{ matrix.artifact }} to release
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
     needs: [build-executable-ubuntu, build-executable-alpine, build-wheel, build-sdist]
     runs-on: ubuntu-latest
