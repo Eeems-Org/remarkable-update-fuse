@@ -128,6 +128,32 @@ class Superblock(Ext4Struct):
         return (self.s_feature_incompat & EXT4_FEATURE_INCOMPAT.IS64BIT) != 0
 
     @property
+    def s_blocks_count(self):
+        return (
+            (self.s_blocks_per_group) * len(self.volume.group_descriptors)
+            - self.s_reserved_gdt_blocks
+            - self.s_overhead_blocks
+        )
+        # if self.has_hi:
+        #     return self.s_blocks_count_hi << 32 | self.s_blocks_count_lo
+
+        # return self.s_blocks_count_lo
+
+    @property
+    def s_r_blocks_count(self):
+        if self.has_hi:
+            return self.s_r_blocks_count_hi << 32 | self.s_r_blocks_count_lo
+
+        return self.s_r_blocks_count_lo
+
+    @property
+    def s_free_blocks_count(self):
+        if self.has_hi:
+            return self.s_free_blocks_count_hi << 32 | self.s_free_blocks_count_lo
+
+        return self.s_free_blocks_count_lo
+
+    @property
     def expected_magic(self):
         return 0xEF53
 

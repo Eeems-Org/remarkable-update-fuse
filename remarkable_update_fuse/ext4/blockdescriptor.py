@@ -41,39 +41,66 @@ class BlockDescriptor(Ext4Struct):
 
     @property
     def bg_block_bitmap(self):
-        return self.bg_block_bitmap_hi << 32 | self.bg_block_bitmap_lo
+        if self.volume.has_hi:
+            return self.bg_block_bitmap_hi << 32 | self.bg_block_bitmap_lo
+
+        return self.bg_block_bitmap_lo
 
     @property
     def bg_inode_bitmap(self):
-        return self.bg_inode_bitmap_hi << 32 | self.bg_inode_bitmap_lo
+        if self.volume.has_hi:
+            return self.bg_inode_bitmap_hi << 32 | self.bg_inode_bitmap_lo
+
+        return self.bg_inode_bitmap_lo
 
     @property
     def bg_free_blocks_count(self):
-        return self.bg_free_blocks_count_hi << 32 | self.bg_free_blocks_count_lo
+        if self.volume.has_hi:
+            return self.bg_free_blocks_count_hi << 32 | self.bg_free_blocks_count_lo
+
+        return self.bg_free_blocks_count_lo
 
     @property
     def bg_free_inodes_count(self):
-        return self.bg_free_inodes_count_hi << 32 | self.bg_free_inodes_count_lo
+        if self.volume.has_hi:
+            return self.bg_free_inodes_count_hi << 32 | self.bg_free_inodes_count_lo
+
+        return self.bg_free_inodes_count_lo
 
     @property
     def bg_exclude_bitmap(self):
-        return self.bg_exclude_bitmap_hi << 32 | self.bg_exclude_bitmap_lo
+        if self.volume.has_hi:
+            return self.bg_exclude_bitmap_hi << 32 | self.bg_exclude_bitmap_lo
+
+        return self.bg_exclude_bitmap_lo
 
     @property
     def bg_used_dirs_count(self):
-        return self.bg_used_dirs_count_hi << 32 | self.bg_used_dirs_count_lo
+        if self.volume.has_hi:
+            return self.bg_used_dirs_count_hi << 32 | self.bg_used_dirs_count_lo
+
+        return self.bg_used_dirs_count_lo
 
     @property
     def bg_block_bitmap_csum(self):
-        return self.bg_block_bitmap_csum_hi << 32 | self.bg_block_bitmap_csum_lo
+        if self.volume.has_hi:
+            return self.bg_block_bitmap_csum_hi << 32 | self.bg_block_bitmap_csum_lo
+
+        return self.bg_block_bitmap_csum_lo
 
     @property
     def bg_inode_bitmap_csum(self):
-        return self.bg_inode_bitmap_csum_hi << 32 | self.bg_inode_bitmap_csum_lo
+        if self.volume.has_hi:
+            return self.bg_inode_bitmap_csum_hi << 32 | self.bg_inode_bitmap_csum_lo
+
+        return self.bg_inode_bitmap_csum_lo
 
     @property
     def bg_itable_unused(self):
-        return self.bg_itable_unused_hi << 32 | self.bg_itable_unused_lo
+        if self.volume.has_hi:
+            return self.bg_itable_unused_hi << 32 | self.bg_itable_unused_lo
+
+        return self.bg_itable_unused_lo
 
     @property
     def bg_inode_table(self):
@@ -81,6 +108,10 @@ class BlockDescriptor(Ext4Struct):
             return (self.bg_inode_table_hi << 32) + self.bg_inode_table_lo
 
         return self.bg_inode_table_lo
+
+    @property
+    def superblock(self):
+        return self.volume.superblock
 
     @property
     def checksum(self):

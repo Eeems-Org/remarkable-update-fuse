@@ -211,32 +211,41 @@ class UpdateFS(fuse.Fuse):
 
         return inode
 
-    def getattr(self, path):
-        try:
-            inode = self.get_inode(path)
-            _stat = Stat()
-            _stat.st_mode = inode.i_mode.value
-            _stat.st_ino = inode.i_uid
-            _stat.st_nlink = inode.i_links_count
-            _stat.st_uid = inode.i_uid
-            _stat.st_gid = inode.i_gid
-            _stat.st_size = inode.i_size
-            _stat.st_atime = inode.i_atime
-            _stat.st_mtime = inode.i_mtime
-            _stat.st_ctime = inode.i_ctime
-            return _stat
-        except FileNotFoundError:
-            return -errno.ENOENT
+    def statfs(self):
+        superblock = self.volume.superblock
+        struct = fuse.StatVfs()
+        struct.f_bsize = self.volume.block_size
+        struct.f_frsize = self.volume.block_size
+        struct.f_blocks = superblock.s_blocks_count
+        struct.f_bfree = superblock.s_free_blocks_count
+        struct.f_bavail = superblock.s_free_blocks_count - superblock.s_r_blocks_count
+        struct.f_files = superblock.s_inodes_count
+        struct.f_ffree = superblock.s_free_inodes_count
+        struct.f_favail = superblock.s_free_inodes_count
+        struct.f_flag = superblock.s_flags.value
+        struct.f_namemax = ext4.EXT4_NAME_LEN
+        return struct
 
-    def readdir(self, path, _):
-        try:
-            inode = self.get_inode(path)
-            for dirent, _ in inode.opendir():
-                yield fuse.Direntry(dirent.name_str)
+    def getattr(self, path, inode=None):
+        if inode is None:
+            try:
+                inode = self.get_inode(path)
 
-        except FileNotFoundError:
-            print(f"{path} not found")
-            return -errno.ENOENT
+            except FileNotFoundError:
+                print(f"{path} not found")
+                return -errno.ENOENT
+
+        _stat = Stat()
+        _stat.st_mode = inode.i_mode.value
+        _stat.st_ino = inode.i_uid
+        _stat.st_nlink = inode.i_links_count
+        _stat.st_uid = inode.i_uid
+        _stat.st_gid = inode.i_gid
+        _stat.st_size = inode.i_size
+        _stat.st_atime = inode.i_atime
+        _stat.st_mtime = inode.i_mtime
+        _stat.st_ctime = inode.i_ctime
+        return _stat
 
     def open(self, path, flags):
         try:
@@ -248,29 +257,90 @@ class UpdateFS(fuse.Fuse):
             if (flags & mode) != os.O_RDONLY:
                 return -errno.EACCES
 
+            return inode
+
         except FileNotFoundError:
             print(f"{path} not found")
             return -errno.ENOENT
 
-    def read(self, path, size, offset):
+    def release(self, _, __=None):
+        return
+
+    def read(self, path, size, offset, inode=None):
+        if inode is None:
+            try:
+                inode = self.get_inode(path)
+
+            except FileNotFoundError:
+                print(f"{path} not found")
+                return -errno.ENOENT
+
+        reader = inode.open()
+        reader.seek(offset, os.SEEK_SET)
+        return reader.read(size)
+
+    def readlink(self, path, inode=None):
+        if inode is None:
+            try:
+                inode = self.get_inode(path)
+
+            except FileNotFoundError:
+                print(f"{path} not found")
+                return -errno.ENOENT
+
+        if not isinstance(inode, ext4.SymbolicLink):
+            return path
+
+        return inode.readlink().decode("utf-8")
+
+    def getxattr(self, path, name, _):
         try:
             inode = self.get_inode(path)
-            reader = inode.open()
-            reader.seek(offset, os.SEEK_SET)
-            return reader.read(size)
+            for _name, value in inode.xattrs:
+                if _name == name:
+                    return value
+
+            return None
 
         except FileNotFoundError:
             print(f"{path} not found")
             return -errno.ENOENT
 
-    def readlink(self, path):
+    def listxattr(self, path, _):
         try:
             inode = self.get_inode(path)
-            if not isinstance(inode, ext4.SymbolicLink):
-                return path
+            for name, _ in inode.xattrs:
+                yield name
 
-            return inode.readlink().decode("utf-8")
+            return None
 
         except FileNotFoundError:
             print(f"{path} not found")
             return -errno.ENOENT
+
+    def opendir(self, path):
+        try:
+            inode = self.get_inode(path)
+            if not isinstance(inode, ext4.Directory):
+                return -errno.EACCES
+
+            return inode
+
+        except FileNotFoundError:
+            print(f"{path} not found")
+            return -errno.ENOENT
+
+    def releasedir(self, _, __=None):
+        return
+
+    def readdir(self, path, _, inode=None):
+        if inode is None:
+            try:
+                inode = self.get_inode(path)
+
+            except FileNotFoundError:
+                print(f"{path} not found")
+                return -errno.ENOENT
+
+        for dirent, _ in inode.opendir():
+            yield fuse.Direntry(dirent.name_str)

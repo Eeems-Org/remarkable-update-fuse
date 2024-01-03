@@ -9,23 +9,23 @@ from remarkable_update_fuse import ext4
 from remarkable_update_fuse.ext4 import ChecksumError
 from remarkable_update_fuse.ext4 import SymbolicLink
 
-failed = False
+FAILED = False
 
 
 def assert_byte(offset, byte):
-    global failed
+    global FAILED
     reader.seek(offset)
     data = reader.read(1)
     print(f"checking offset {offset:08X} is {to_hex(byte)}: ", end="")
     if len(data) != 1:
         print("fail")
-        failed = True
+        FAILED = True
         print(f"  Error: {len(data)} bytes returned, only 1 expected: {to_hex(data)}")
         return
 
     if data != byte:
         print("fail")
-        failed = True
+        FAILED = True
         print(f"  Error: Data returned is {to_hex(data)}")
         return
 
@@ -33,25 +33,25 @@ def assert_byte(offset, byte):
 
 
 def assert_exists(path):
-    global volume
+    global FAILED
     print(f"checking that {path} exists: ", end="")
     try:
         volume.inode_at(path)
         print("pass")
     except FileNotFoundError:
         print("fail")
-        failed = True
+        FAILED = True
 
 
 def assert_hash(expected_hash, path):
-    global failed
+    global FAILED
     print(f"checking {path} md5sum is {expected_hash}: ", end="")
     inode = volume.inode_at(path)
     actual_hash = md5(inode.open().read()).hexdigest()
     if actual_hash != expected_hash:
         print("fail")
         print(f"  Error: Hash returned is {actual_hash}")
-        failed = True
+        FAILED = True
         return
 
     print("pass")
@@ -59,12 +59,12 @@ def assert_hash(expected_hash, path):
 
 def assert_symlink_to(path, symlink):
     assert isinstance(symlink, bytes)
-    global failed
+    global FAILED
     print(f"checking {path} is symlink to {symlink}: ", end="")
     inode = volume.inode_at(path)
     if not isinstance(inode, SymbolicLink):
         print("fail")
-        failed = True
+        FAILED = True
         print(f"  Error: Inode is not symlink: {inode}")
         return
 
@@ -72,7 +72,7 @@ def assert_symlink_to(path, symlink):
     if data != symlink:
         print("fail")
         print(f"  Error: symlink is actually to {data}")
-        failed = True
+        FAILED = True
         return
 
     print("pass")
@@ -87,7 +87,7 @@ try:
 
 except ChecksumError:
     print("fail")
-    failed = True
+    FAILED = True
 
 print("checking image signature: ", end="")
 try:
@@ -99,6 +99,43 @@ try:
     print("pass")
 except UpdateImageSignatureException:
     print("fail")
+
+print("checking block count is 278272: ", end="")
+# If you remove the actual overhead it should actually be 276480
+if volume.superblock.s_blocks_count != 278272:
+    print("fail")
+    print(f"  Error: {volume.superblock.s_blocks_count}")
+    FAILED = True
+
+else:
+    print("pass")
+
+print("checking free block count is 54420: ", end="")
+if volume.superblock.s_free_blocks_count != 54420:
+    print("fail")
+    print(f"  Error: {volume.superblock.s_free_blocks_count}")
+    FAILED = True
+
+else:
+    print("pass")
+
+print("checking inode count is 34816: ", end="")
+if volume.superblock.s_inodes_count != 34816:
+    print("fail")
+    print(f"  Error: {volume.superblock.s_inodes_count}")
+    FAILED = True
+
+else:
+    print("pass")
+
+print("checking free inode count is 26136: ", end="")
+if volume.superblock.s_free_inodes_count != 26136:
+    print("fail")
+    print(f"  Error: {volume.superblock.s_free_inodes_count}")
+    FAILED = True
+
+else:
+    print("pass")
 
 inode = volume.inode_at("/bin/bash.bash")
 reader = inode.open()
@@ -152,5 +189,5 @@ print(
 )
 assert_symlink_to("/bin/ash", b"/bin/busybox.nosuid")
 
-if failed:
+if FAILED:
     sys.exit(1)
