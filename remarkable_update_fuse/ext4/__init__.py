@@ -22,6 +22,11 @@ from .superblock import Superblock
 
 from .blockdescriptor import BlockDescriptor
 
+from .inode import BlockDevice
+from .inode import CharacterDevice
+from .inode import Directory
+from .inode import Fifo
+from .inode import File
 from .inode import Hurd1
 from .inode import Hurd2
 from .inode import Inode
@@ -31,6 +36,8 @@ from .inode import Masix1
 from .inode import Masix2
 from .inode import Osd1
 from .inode import Osd2
+from .inode import Socket
+from .inode import SymbolicLink
 
 from .volume import Volume
 from .volume import InvalidStreamException
@@ -55,3 +62,8 @@ from .directory import EXT4_NAME_LEN
 from .directory import EXT4_DIR_PAD
 from .directory import EXT4_DIR_ROUND
 from .directory import EXT4_MAX_REC_LEN
+
+from .xattr import ExtendedAttributeError
+from .xattr import ExtendedAttributeIBodyHeader
+from .xattr import ExtendedAttributeHeader
+from .xattr import ExtendedAttributeEntry

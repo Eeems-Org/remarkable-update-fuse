@@ -54,31 +54,6 @@ class Inodes(object):
     @cached(cache=LRUCache(maxsize=32))
     def __getitem__(self, index):
         offset = self.offset(index)
-        self.volume.seek(offset + Inode.i_mode.offset)
-        i_mode = Inode.field_type("i_mode").from_buffer_copy(
-            self.volume.read(Inode.i_mode.size)
-        )
-        if i_mode & MODE.IFIFO != 0:
-            return Fifo(self.volume, offset, index)
-
-        if i_mode & MODE.IFCHR != 0:
-            return CharacterDevice(self.volume, offset, index)
-
-        if i_mode & MODE.IFDIR != 0:
-            return Directory(self.volume, offset, index)
-
-        if i_mode & MODE.IFBLK != 0:
-            return BlockDevice(self.volume, offset, index)
-
-        if i_mode & MODE.IFREG != 0:
-            return File(self.volume, offset, index)
-
-        if i_mode & MODE.IFLNK != 0:
-            return SymbolicLink(self.volume, offset, index)
-
-        if i_mode & MODE.IFSOCK != 0:
-            return Socket(self.volume, offset, index)
-
         return Inode(self.volume, offset, index)
 
 
@@ -103,6 +78,7 @@ class Volume(object):
         self.ignore_magic = ignore_magic
         self.ignore_checksum = ignore_checksum
         self.superblock = Superblock(self)
+        self.superblock.verify()
         self.group_descriptors = []
         block_size = self.block_size
         table_offset = (self.superblock.offset // block_size + 1) * block_size
@@ -112,7 +88,9 @@ class Volume(object):
             descriptor = BlockDescriptor(
                 self,
                 table_offset + (index * self.superblock.s_desc_size),
+                index,
             )
+            descriptor.verify()
             self.group_descriptors.insert(index, descriptor)
 
         self.inodes = Inodes(self)
@@ -201,6 +179,9 @@ class Volume(object):
 
     @staticmethod
     def path_tuple(path):
+        if not isinstance(path, bytes):
+            path = path.encode("utf-8")
+
         path = os.path.normpath(path)
         paths = tuple()
         if path == "/":
@@ -212,7 +193,7 @@ class Volume(object):
             if not split[1]:
                 break
 
-            paths = (split[1].encode("utf-8"),) + paths
+            paths = (split[1],) + paths
 
         return paths
 
@@ -224,9 +205,12 @@ class Volume(object):
             return cwd
 
         while paths:
+            if not isinstance(cwd, Directory):
+                raise OSError(errno.ENOTDIR)
+
             name = paths.pop(0)
             inode = None
-            for dirent, file_type in cwd.opendir():
+            for dirent, _ in cwd.opendir():
                 if dirent.name_bytes == name:
                     inode = self.inodes[dirent.inode]
                     break
@@ -234,12 +218,6 @@ class Volume(object):
             if inode is None:
                 raise FileNotFoundError(path)
 
-            while isinstance(inode, SymbolicLink):
-                inode = inode.readlink()
-
-            if paths and not isinstance(inode, Directory):
-                raise OSError(errno.ENOTDIR)
-
             cwd = inode
 
-        return inode
+        return cwd

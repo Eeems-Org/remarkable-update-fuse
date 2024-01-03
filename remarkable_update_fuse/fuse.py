@@ -6,14 +6,16 @@ import threading
 import time
 import warnings
 
-import ext4
 import fuse
+
+from pathlib import PurePosixPath
+
+from . import ext4
 
 from .image import UpdateImage
 from .image import UpdateImageSignatureException
 from .threads import KillableThread
 
-# from .ext4 import Ext4Filesystem
 
 fuse.fuse_python_api = (0, 2)
 
@@ -116,6 +118,10 @@ class UpdateFS(fuse.Fuse):
     def update_file(self):
         return self.fuse_args.update_file
 
+    @property
+    def mountpoint(self):
+        return self.fuse_args.mountpoint
+
     def fuse_error(self, msg):
         print(msg, file=sys.stderr)
         self.fuse_args.setmod("showhelp")
@@ -144,7 +150,7 @@ class UpdateFS(fuse.Fuse):
         try:
             self.image.verify(
                 self.get_inode("/usr/share/update_engine/update-payload-key.pub.pem")
-                .open_read()
+                .open()
                 .read()
             )
             print("Signature verified")
@@ -165,23 +171,6 @@ class UpdateFS(fuse.Fuse):
         )
         thread.start()
         return [thread]
-
-    @staticmethod
-    def path_tuple(path):
-        path = os.path.normpath(path)
-        paths = tuple()
-        if path == "/":
-            return paths
-
-        while True:
-            split = os.path.split(path)
-            path = split[0]
-            if not split[1]:
-                break
-
-            paths = (split[1],) + paths
-
-        return paths
 
     # Static as it's being started by threading.Thread
     @staticmethod
@@ -204,23 +193,19 @@ class UpdateFS(fuse.Fuse):
             print(f"[cache-ttl] {usage}")
 
     def get_inode(self, path):
-        paths = UpdateFS.path_tuple(path)
-        if not paths:
-            return self.volume.root
-
         if self.disable_path_cache:
-            inode = self.volume.root.get_inode(*paths)
+            inode = self.volume.inode_at(path)
             if inode is None:
                 raise FileNotFoundError()
 
             return inode
 
-        if paths not in self.inode_cache:
-            inode = self.volume.root.get_inode(*paths)
-            self.inode_cache[paths] = inode
+        if path not in self.inode_cache:
+            inode = self.volume.inode_at(path)
+            self.inode_cache[path] = inode
             inode.verify()
 
-        inode = self.inode_cache[paths]
+        inode = self.inode_cache[path]
         if inode is None:
             raise FileNotFoundError()
 
@@ -230,24 +215,24 @@ class UpdateFS(fuse.Fuse):
         try:
             inode = self.get_inode(path)
             _stat = Stat()
-            _stat.st_mode = inode.inode.i_mode
-            _stat.st_ino = inode.inode.i_uid_lo
-            _stat.st_nlink = inode.inode.i_links_count
-            _stat.st_uid = inode.inode.i_uid_lo
-            _stat.st_gid = inode.inode.i_gid_lo
-            _stat.st_size = inode.inode.i_size_lo
-            _stat.st_atime = inode.inode.i_atime
-            _stat.st_mtime = inode.inode.i_mtime
-            _stat.st_ctime = inode.inode.i_ctime
+            _stat.st_mode = inode.i_mode.value
+            _stat.st_ino = inode.i_uid
+            _stat.st_nlink = inode.i_links_count
+            _stat.st_uid = inode.i_uid
+            _stat.st_gid = inode.i_gid
+            _stat.st_size = inode.i_size
+            _stat.st_atime = inode.i_atime
+            _stat.st_mtime = inode.i_mtime
+            _stat.st_ctime = inode.i_ctime
             return _stat
         except FileNotFoundError:
             return -errno.ENOENT
 
-    def readdir(self, path, offset):
+    def readdir(self, path, _):
         try:
             inode = self.get_inode(path)
-            for file_name, inode_idx, file_type in inode.open_dir():
-                yield fuse.Direntry(file_name)
+            for dirent, _ in inode.opendir():
+                yield fuse.Direntry(dirent.name_str)
 
         except FileNotFoundError:
             print(f"{path} not found")
@@ -256,7 +241,7 @@ class UpdateFS(fuse.Fuse):
     def open(self, path, flags):
         try:
             inode = self.get_inode(path)
-            if inode.is_dir:
+            if isinstance(inode, ext4.Directory):
                 return -errno.EACCES
 
             mode = os.O_RDONLY | os.O_WRONLY | os.O_RDWR
@@ -270,7 +255,7 @@ class UpdateFS(fuse.Fuse):
     def read(self, path, size, offset):
         try:
             inode = self.get_inode(path)
-            reader = inode.open_read()
+            reader = inode.open()
             reader.seek(offset, os.SEEK_SET)
             return reader.read(size)
 
@@ -281,10 +266,10 @@ class UpdateFS(fuse.Fuse):
     def readlink(self, path):
         try:
             inode = self.get_inode(path)
-            if not inode.is_symlink:
+            if not isinstance(inode, ext4.SymbolicLink):
                 return path
 
-            return inode.open_read().read().decode("utf-8")
+            return inode.readlink().decode("utf-8")
 
         except FileNotFoundError:
             print(f"{path} not found")

@@ -65,6 +65,10 @@ class Ext4Struct(LittleEndianStructure):
     def expected_checksum(self):
         return None
 
+    @property
+    def ignore_magic(self):
+        return self.volume.ignore_magic
+
     def verify(self):
         """
         Verify magic numbers
@@ -77,7 +81,7 @@ class Ext4Struct(LittleEndianStructure):
             f"expected={to_hex(self.expected_magic)}, "
             f"actual={to_hex(self.magic)}"
         )
-        if not self.volume.ignore_magic:
+        if not self.ignore_magic:
             raise MagicError(message)
 
         warnings.warn(message, RuntimeWarning)

@@ -136,6 +136,20 @@ class Superblock(Ext4Struct):
         return self.s_magic
 
     @property
+    def expected_checksum(self):
+        if self.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT.METADATA_CSUM == 0:
+            return None
+
+        return self.s_checksum
+
+    @property
+    def checksum(self):
+        if self.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT.METADATA_CSUM == 0:
+            return None
+
+        return crc32c(bytes(self)[: Superblock.s_checksum.offset])
+
+    @property
     def seed(self):
         if self.s_feature_incompat & EXT4_FEATURE_INCOMPAT.CSUM_SEED != 0:
             return self.s_checksum_seed
