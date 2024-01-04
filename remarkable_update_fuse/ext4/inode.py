@@ -27,8 +27,9 @@ from .directory import DirectoryEntryTail
 from .directory import DirectoryEntryHash
 from .directory import EXT4_DIR_ROUND
 
+from .htree import DXRoot
+
 from .xattr import ExtendedAttributeIBodyHeader
-from .xattr import ExtendedAttributeHeader
 
 
 class OpenDirectoryError(Exception):
@@ -352,6 +353,8 @@ class Directory(Inode):
     def __init__(self, volume, offset, i_no):
         super().__init__(volume, offset, i_no)
         self._dirents = None
+        if self.is_htree:
+            self.htree = DXRoot(self)
 
     def verify(self):
         super().verify()
@@ -396,9 +399,6 @@ class Directory(Inode):
 
             return
 
-        if self.is_htree:
-            warnings.warn("Hash trees are not implemented yet.", RuntimeWarning)
-
         _type = DirectoryEntry2 if self.has_filetype else DirectoryEntry
         dirents = []
         offset = 0
@@ -411,8 +411,6 @@ class Directory(Inode):
                 continue
 
             if not dirent.inode or not dirent.name_len:
-                # TODO this is probably actually an htree if dirent.inode is 0
-                #      so we should read it
                 offset += dirent.rec_len
                 continue
 

@@ -67,3 +67,5 @@ from .xattr import ExtendedAttributeError
 from .xattr import ExtendedAttributeIBodyHeader
 from .xattr import ExtendedAttributeHeader
 from .xattr import ExtendedAttributeEntry
+
+from .htree import DXRoot
