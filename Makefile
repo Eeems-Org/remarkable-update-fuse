@@ -5,6 +5,7 @@ CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1703028363/ubu
 CODEXCTL_HASH := 5c3aa5f264f4ae95de6e259eb8d5da8f0d9c2d7eb3710adb0cf53bcb72dcb79a
 FW_VERSION := 2.15.1.1189
 FW_DATA := wVbHkgKisg-
+ARCH := $(shell uname -m)
 
 PROTO_SOURCE := $(shell find protobuf -type f -name '*.proto')
 PROTO_OBJ := $(addprefix $(PACKAGE)/proto/,$(PROTO_SOURCE:%.proto=%_pb2.py))
@@ -85,7 +86,7 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 
 dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	. .venv/bin/activate; \
-	pip3 install wheel nuitka; \
+	python -m pip install wheel nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	nuitka3 \
 	    --enable-plugin=pylint-warnings \
@@ -102,9 +103,14 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 
 .venv/bin/activate: requirements.txt
 	@echo "Setting up development virtual env in .venv"
-	python -m venv .venv; \
+	python -m venv .venv
+ifeq ($(ARCH), "armv7l")
 	. .venv/bin/activate; \
-	python -m pip install -r requirements.txt
+	python -m pip install $$extra_flags -r requirements.txt
+else
+	. .venv/bin/activate; \
+	python -m pip install --extra-index-url=https://wheels.eeems.codes/ -r requirements.txt
+endif
 
 .venv/codexctl.zip: .venv/bin/activate
 	curl -L "${CODEXCTL}" -o .venv/codexctl.zip
