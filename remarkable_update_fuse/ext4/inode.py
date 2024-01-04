@@ -330,6 +330,24 @@ class CharacterDevice(Inode):
     pass
 
 
+class BlockDevice(Inode):
+    pass
+
+
+class Socket(Inode):
+    pass
+
+
+class File(Inode):
+    def open(self, mode="rb", encoding=None, newline=None):
+        return self._open(mode, encoding, newline)
+
+
+class SymbolicLink(Inode):
+    def readlink(self):
+        return self._open().read()
+
+
 class Directory(Inode):
     def __init__(self, volume, offset, i_no):
         super().__init__(volume, offset, i_no)
@@ -469,21 +487,3 @@ class Directory(Inode):
                 file_type = self._get_file_type(dirent)
 
             yield dirent, file_type
-
-
-class BlockDevice(Inode):
-    pass
-
-
-class File(Inode):
-    def open(self, mode="rb", encoding=None, newline=None):
-        return self._open(mode, encoding, newline)
-
-
-class SymbolicLink(Inode):
-    def readlink(self):
-        return self._open().read()
-
-
-class Socket(Inode):
-    pass

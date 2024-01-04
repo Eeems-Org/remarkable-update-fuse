@@ -134,7 +134,7 @@ jobs:
             --platform=linux/arm/v7 \
             -v "${src_path}":/src \
             eeems/nuitka-arm-builder:bullseye-3.11 \
-            bash -ec "$script"
+            bash -ec "$script" \
           | while read -r line; do
             if [[ "$line" == 'Nuitka'*':ERROR:'* ]]; then
               echo "::error file=${{ steps.args.outputs.main_file }},title=Nuitka Error::$line"
