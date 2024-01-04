@@ -85,8 +85,14 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 
 
 dist/rmufuse: dist .venv/bin/activate $(OBJ)
+ifeq ($(ARCH), "armv7l")
 	. .venv/bin/activate; \
-	python -m pip install wheel nuitka; \
+	python -m pip install wheel nuitka
+else
+	. .venv/bin/activate; \
+	python -m pip install --extra-index-url=https://wheels.eeems.codes/ wheel nuitka
+endif
+	. .venv/bin/activate; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	nuitka3 \
 	    --enable-plugin=pylint-warnings \
