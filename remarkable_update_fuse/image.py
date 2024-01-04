@@ -11,9 +11,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from cryptography.hazmat.primitives.hashes import SHA256
-from .proto.update_metadata_pb2 import DeltaArchiveManifest
-from .proto.update_metadata_pb2 import InstallOperation
-from .proto.update_metadata_pb2 import Signatures
+from .update_metadata_pb2 import DeltaArchiveManifest
+from .update_metadata_pb2 import InstallOperation
+from .update_metadata_pb2 import Signatures
 
 
 def sizeof_fmt(num, suffix="B"):

@@ -7,7 +7,7 @@ FW_VERSION := 2.15.1.1189
 FW_DATA := wVbHkgKisg-
 
 PROTO_SOURCE := $(shell find protobuf -type f -name '*.proto')
-PROTO_OBJ := $(addprefix $(PACKAGE)/proto/,$(PROTO_SOURCE:%.proto=%_pb2.py))
+PROTO_OBJ := $(addprefix $(PACKAGE),$(PROTO_SOURCE:%.proto=%_pb2.py))
 
 OBJ := $(shell find ${PACKAGE} -type f)
 OBJ += requirements.txt
@@ -125,7 +125,7 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 
 $(PROTO_OBJ): $(PROTO_SOURCE)
 	protoc \
-	    --python_out=$(PACKAGE)/proto/ \
+	    --python_out=$(PACKAGE) \
 	    --proto_path=protobuf \
 	    $(PROTO_SOURCE)
 
