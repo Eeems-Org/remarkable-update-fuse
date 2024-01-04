@@ -85,7 +85,7 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 
 
 dist/rmufuse: dist .venv/bin/activate $(OBJ)
-ifeq ($(ARCH), "armv7l")
+ifeq ($(ARCH), armv7l)
 	. .venv/bin/activate; \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ wheel nuitka
 else
@@ -110,8 +110,7 @@ endif
 .venv/bin/activate: requirements.txt
 	@echo "Setting up development virtual env in .venv"
 	python -m venv .venv
-	echo $(ARCH)
-ifeq ($(ARCH), "armv7l")
+ifeq ($(ARCH), armv7l)
 	. .venv/bin/activate; \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ -r requirements.txt
 else
