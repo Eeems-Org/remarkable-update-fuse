@@ -1,6 +1,4 @@
-cachetools==5.3.2
 cryptography==41.0.7
 fuse-python==1.0.7
 protobuf==4.21.1
-six==1.16.0
-crcmod==1.7
+ext4==1.0.1

@@ -6,11 +6,10 @@ import threading
 import time
 import warnings
 
-import fuse
-
 from pathlib import PurePosixPath
 
-from . import ext4
+import fuse
+import ext4
 
 from .image import UpdateImage
 from .image import UpdateImageSignatureException

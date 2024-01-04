@@ -1,13 +1,13 @@
 import os
 import sys
+import ext4
 
+from ext4 import ChecksumError
+from ext4 import SymbolicLink
+from ext4.struct import to_hex
 from hashlib import md5
 from remarkable_update_fuse import UpdateImage
 from remarkable_update_fuse import UpdateImageSignatureException
-from remarkable_update_fuse.ext4.struct import to_hex
-from remarkable_update_fuse import ext4
-from remarkable_update_fuse.ext4 import ChecksumError
-from remarkable_update_fuse.ext4 import SymbolicLink
 
 FAILED = False
 

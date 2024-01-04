@@ -29,10 +29,10 @@ with open("image.ext4", "wb") as f:
     f.write(image.read())
 
 # Extract specific file
-volume = Volume(image, offset=0)
-inode = volume.root.get_inode("etc", "version")
+volume = Volume(image)
+inode = volume.inode_at("etc", "version")
 with open("version", "wb") as f:
-    f.write(inode.open_read().read())
+    f.write(inode.open().read())
 ```
 
 ## Building
