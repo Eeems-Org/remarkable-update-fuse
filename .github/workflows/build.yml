@@ -269,7 +269,13 @@ jobs:
           path: dist
       - name: Upload to release
         run:
-          find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
+          if [ -f rmufuse ]; then
+            name="rmufuse-${{ matrix.artifact }}"
+            mv rmufuse "$name"
+            gh release upload "$TAG" "$name" --clobber
+          else
+            find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
