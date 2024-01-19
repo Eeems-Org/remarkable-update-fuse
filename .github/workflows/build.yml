@@ -157,14 +157,14 @@ jobs:
             cp -a /opt/lib/nuitka .venv
             source /opt/lib/nuitka/bin/activate
             pip install --upgrade pip
-            make -C /src executable
+            make -C /src portable
       - name: Sanity check
         uses: Eeems-Org/run-in-remarkable-action@v1
         with:
           fw_version: 2.15.1
           run: |
-            rmufuse --help
-          path: ${{ github.workspace }}/dist
+            rmufuse-portable --help
+          path: dist
       - uses: actions/upload-artifact@v3
         with:
           name: rmufuse-remarkable
@@ -280,6 +280,10 @@ jobs:
           if [ -f rmufuse ]; then
             name="rmufuse-${{ matrix.artifact }}"
             mv rmufuse "$name"
+            gh release upload "$TAG" "$name" --clobber
+          elif [ -f rmufuse-portable ]; then
+            name="rmufuse-${{ matrix.artifact }}"
+            mv rmufuse-portable "$name"
             gh release upload "$TAG" "$name" --clobber
           else
             find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
