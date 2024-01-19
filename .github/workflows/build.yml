@@ -147,8 +147,7 @@ jobs:
         uses: Eeems-Org/run-in-remarkable-action@v1
         with:
           fw_version: 2.15.1
-          run: |
-            rmufuse-portable --help
+          run: ./rmufuse-portable --help
           path: dist
       - uses: actions/upload-artifact@v3
         with:
