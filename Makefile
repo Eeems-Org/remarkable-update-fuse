@@ -123,7 +123,7 @@ dist/rmufuse-portable: dist .venv/bin/activate $(OBJ)
 	    --output-dir=dist \
 	    --remove-output \
 	    --output-filename=rmufuse-portable \
-	    '--include-data-files=${FUSE_FOLDER}/libfuse.so.2.*=libfuse.so.2' \
+	    '--include-data-files=${FUSE_FOLDER}/libfuse.so=libfuse.so.2' \
 	    remarkable_update_fuse
 	patchelf dist/rmufuse
 

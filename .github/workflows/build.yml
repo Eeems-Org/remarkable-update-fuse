@@ -129,6 +129,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build with nuitka
         run: |
+          set -e
           docker run \
             --rm \
             --platform=linux/arm/v7 \
@@ -153,7 +154,8 @@ jobs:
             apt update
             apt install -y \
               protobuf-compiler \
-              libfuse-dev
+              libfuse-dev \
+              pkgconf
             cp -a /opt/lib/nuitka .venv
             source /opt/lib/nuitka/bin/activate
             pip install --upgrade pip
