@@ -24,6 +24,7 @@ jobs:
         uses: arduino/setup-protoc@v2
         with:
           version: "25.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -55,6 +56,7 @@ jobs:
         uses: arduino/setup-protoc@v2
         with:
           version: "25.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -174,6 +176,7 @@ jobs:
         uses: arduino/setup-protoc@v2
         with:
           version: "25.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install build tool
         run: pip install build
       - name: Building package
@@ -199,6 +202,7 @@ jobs:
         uses: arduino/setup-protoc@v2
         with:
           version: "25.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install build tool
         run: pip install build
       - name: Building package
