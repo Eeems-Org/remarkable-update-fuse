@@ -85,7 +85,10 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 
 dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	. .venv/bin/activate; \
-	python -m pip install --extra-index-url=https://wheels.eeems.codes/ wheel nuitka; \
+	python -m pip install \
+	    --extra-index-url=https://wheels.eeems.codes/ \
+	    wheel \
+	    nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	nuitka3 \
 	    --enable-plugin=pylint-warnings \
@@ -95,10 +98,34 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	    --lto=yes \
 	    --assume-yes-for-downloads \
 	    --python-flag=-m \
-	    --remove-output \
 	    --output-dir=dist \
+	    --remove-output \
 	    --output-filename=rmufuse \
 	    remarkable_update_fuse
+
+dist/rmufuse-portable: dist .venv/bin/activate $(OBJ)
+	. .venv/bin/activate; \
+	python -m pip install \
+	    --extra-index-url=https://wheels.eeems.codes/ \
+	    wheel \
+	    nuitka; \
+	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
+	nuitka3 \
+	    --enable-plugin=pylint-warnings \
+	    --enable-plugin=upx \
+	    --warn-implicit-exceptions \
+	    --onefile \
+	    --lto=yes \
+	    --assume-yes-for-downloads \
+	    --python-flag=-m \
+	    --output-dir=dist \
+	    --remove-output \
+	    --output-filename=rmufuse-portable \
+	    '--include-data-files=$(shell pkgconf --variable=libdir fuse)/libfuse.so=libfuse.so.2' \
+	    '--include-data-files=$(shell pkgconf --variable=libdir libssl)/libssl.so=libssl.so.1' \
+	    '--include-data-files=$(shell pkgconf --variable=libdir libcrypto)/libcrypto.so=libcrypto.so.3' \
+	    remarkable_update_fuse
+	patchelf dist/rmufuse
 
 .venv/bin/activate: requirements.txt
 	@echo "Setting up development virtual env in .venv"
@@ -145,8 +172,10 @@ test: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed $(OBJ
 	. .venv/bin/activate; \
 	python test.py
 
-executable: .venv/bin/activate dist/rmufuse
+executable: dist/rmufuse
 	dist/rmufuse --help
+
+portable: dist/rmufuse-portable
 
 all: release
 
@@ -156,6 +185,7 @@ all: release
 	clean \
 	dev \
 	executable \
+	portable \
 	install \
 	release \
 	sdist \
