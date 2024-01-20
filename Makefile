@@ -9,8 +9,6 @@ FW_DATA := wVbHkgKisg-
 PROTO_SOURCE := $(shell find protobuf -type f -name '*.proto')
 PROTO_OBJ := $(addprefix $(PACKAGE),$(PROTO_SOURCE:%.proto=%_pb2.py))
 
-FUSE_FOLDER := $(shell pkgconf --variable=libdir fuse)
-
 OBJ := $(shell find ${PACKAGE} -type f)
 OBJ += requirements.txt
 OBJ += pyproject.toml
@@ -123,7 +121,9 @@ dist/rmufuse-portable: dist .venv/bin/activate $(OBJ)
 	    --output-dir=dist \
 	    --remove-output \
 	    --output-filename=rmufuse-portable \
-	    '--include-data-files=${FUSE_FOLDER}/libfuse.so=libfuse.so.2' \
+	    '--include-data-files=$(shell pkgconf --variable=libdir fuse)/libfuse.so=libfuse.so.2' \
+	    '--include-data-files=$(shell pkgconf --variable=libdir libssl)/libssl.so=libssl.so.1' \
+	    '--include-data-files=$(shell pkgconf --variable=libdir libcrypto)/libcrypto.so=libcrypto.so.3' \
 	    remarkable_update_fuse
 	patchelf dist/rmufuse
 
