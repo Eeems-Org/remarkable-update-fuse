@@ -233,28 +233,36 @@ class UpdateImage(io.RawIOBase):
             blob_end_offset = min(offset - blob_offset + size, blob_length)
             data = blob_data[blob_start_offset:blob_end_offset]
 
-            assert blob_start_offset >= 0, "blob start offset is negative number"
+            assert (
+                blob_start_offset >= 0
+            ), f"blob start offset is negative number: {blob_start_offset}"
             assert (
                 blob_end_offset <= blob_length
-            ), "blob end offset is larger than blob length"
+            ), f"blob end offset is larger than blob length: {blob_end_offset}, {blob_length}"
             assert blob_end_offset - blob_start_offset == len(
                 data
-            ), "blob start and end is larger than data"
+            ), f"blob start and end is larger than data: {blob_end_offset - blob_start_offset}, {len(data)}"
 
             start_offset = blob_offset + blob_start_offset - offset
             end_offset = blob_offset + blob_end_offset - offset
             res[start_offset:end_offset] = data
 
-            assert start_offset >= 0, "start offset is negative number"
-            assert start_offset < len(res), "start offset is larger than size of data"
+            assert start_offset >= 0, f"start offset is negative number: {start_offset}"
+            assert start_offset < len(
+                res
+            ), f"start offset is larger than size of data: {start_offset}, {len(res)}"
             assert (
-                end_offset < blob_offset + blob_length
-            ), "end offset is larger than size of blob"
+                end_offset <= blob_offset + blob_length
+            ), f"end offset is larger than size of blob: {end_offset}, {blob_offset + blob_length}"
             assert end_offset - start_offset == len(
                 data
-            ), "size of offsets does not equal size of data"
-            assert end_offset <= len(res), "end offset is larger than size of data"
+            ), f"size of offsets does not equal size of data, {end_offset - start_offset}, {len(data)}"
+            assert end_offset <= len(
+                res
+            ), f"end offset is larger than size of data, {end_offset}, {len(res)}"
             assert res[start_offset:end_offset] == data, "data does not match"
 
-        assert len(res) == size, "size of data does not match expected size"
+        assert (
+            len(res) == size
+        ), f"size of data does not match expected size: {len(res)}, {size}"
         return bytes(res)
