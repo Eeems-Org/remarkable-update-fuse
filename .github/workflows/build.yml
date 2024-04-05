@@ -157,7 +157,7 @@ jobs:
             source /opt/lib/nuitka/bin/activate
             pip install --upgrade pip
             make -C /src executable
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-remarkable
           path: dist
