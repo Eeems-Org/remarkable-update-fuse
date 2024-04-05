@@ -125,7 +125,7 @@ dist/rmufuse-portable: dist .venv/bin/activate $(OBJ)
 	    '--include-data-files=$(shell pkgconf --variable=libdir libssl)/libssl.so=libssl.so.1' \
 	    '--include-data-files=$(shell pkgconf --variable=libdir libcrypto)/libcrypto.so=libcrypto.so.3' \
 	    remarkable_update_fuse
-	patchelf dist/rmufuse
+	patchelf --print-needed dist/rmufuse-portable
 
 .venv/bin/activate: requirements.txt
 	@echo "Setting up development virtual env in .venv"
