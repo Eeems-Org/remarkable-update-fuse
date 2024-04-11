@@ -30,7 +30,7 @@ with open("image.ext4", "wb") as f:
 
 # Extract specific file
 volume = Volume(image)
-inode = volume.inode_at("etc", "version")
+inode = volume.inode_at("/etc/version")
 with open("version", "wb") as f:
     f.write(inode.open().read())
 ```

@@ -21,18 +21,18 @@ jobs:
           packages: libfuse-dev
           version: 1.0
       - name: Install Protoc
-        uses: arduino/setup-protoc@v2
+        uses: arduino/setup-protoc@v3
         with:
           version: "25.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout the Git repository
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
       - name: Cache test files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .venv/bin/codexctl.bin
@@ -53,18 +53,18 @@ jobs:
           packages: libfuse-dev ccache
           version: 1.0
       - name: Install Protoc
-        uses: arduino/setup-protoc@v2
+        uses: arduino/setup-protoc@v3
         with:
           version: "25.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout the Git repository
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
       - name: Nuitka ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.nuitka
           key: ${{ github.job }}-ccache-ubuntu-latest
@@ -97,7 +97,7 @@ jobs:
             patchelf
             protoc
       - name: Nuitka ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.nuitka
           key: ${{ github.job }}-ccache-alpine-v3.18
@@ -116,12 +116,12 @@ jobs:
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
       - name: Nuitka ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.nuitka
           key: ${{ github.job }}-ccache-remarkable-2.15.1
@@ -151,7 +151,7 @@ jobs:
           fw_version: 2.15.1
           run: ./rmufuse-portable --help
           path: dist
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-remarkable
           path: dist
@@ -166,14 +166,14 @@ jobs:
           - '3.11'
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           cache: 'pip'
       - name: Install Protoc
-        uses: arduino/setup-protoc@v2
+        uses: arduino/setup-protoc@v3
         with:
           version: "25.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -192,14 +192,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
       - name: Install Protoc
-        uses: arduino/setup-protoc@v2
+        uses: arduino/setup-protoc@v3
         with:
           version: "25.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}

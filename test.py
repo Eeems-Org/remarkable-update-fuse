@@ -2,6 +2,7 @@ import os
 import sys
 import ext4
 
+from tempfile import TemporaryFile
 from ext4 import ChecksumError
 from ext4 import SymbolicLink
 from ext4.struct import to_hex
@@ -188,6 +189,20 @@ print(
     else "fail"
 )
 assert_symlink_to("/bin/ash", b"/bin/busybox.nosuid")
+
+print("checking writing full image to file: ", end="")
+try:
+    image.seek(0, os.SEEK_SET)
+    with TemporaryFile(mode="wb") as f:
+        f.write(image.read())
+
+    print("pass")
+
+except Exception as e:
+    FAILED = True
+    print("fail")
+    print("  ", end="")
+    print(e)
 
 if FAILED:
     sys.exit(1)
