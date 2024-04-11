@@ -1,6 +1,7 @@
 import os
 import sys
 import ext4
+import errno
 
 from tempfile import TemporaryFile
 from ext4 import ChecksumError
@@ -189,6 +190,22 @@ print(
     else "fail"
 )
 assert_symlink_to("/bin/ash", b"/bin/busybox.nosuid")
+
+print("checking path that contains file raises ENOTDIR: ", end="")
+try:
+    volume.inode_at("/uboot-version/test")
+    print("fail")
+    print("  No error raised")
+    FAILED = True
+
+except OSError as e:
+    if e.errno == errno.ENOTDIR:
+        print("pass")
+
+    else:
+        print("fail")
+        FAILED = True
+        print(f"  Unexpected error: {os.strerror(e)}")
 
 print("checking writing full image to file: ", end="")
 try:
