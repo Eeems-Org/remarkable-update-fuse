@@ -51,4 +51,10 @@ make wheel # Build wheel package in dist/
 make sdist # Build sdist package in dist/
 make dev # Test mounting 2.15.1.1189 to .venv/mnt
 make install # Build wheel and install it with pipx or pip install --user
+make executable # Build a standalone executable
+make portable # Build a standalone executable with some extra dependencies embedded
 ```
+
+### Building for the reMarkable (Or really any linux/arm/v7 device)
+
+The same as above, but use `./make_for_remarkable.sh` instead of `make`. This requires docker to be installed.
