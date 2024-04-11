@@ -153,8 +153,12 @@ class UpdateFS(fuse.Fuse):
                 .read()
             )
             print("Signature verified")
+
         except UpdateImageSignatureException:
             warnings.warn("Signature doesn't match contents", RuntimeWarning)
+
+        except FileNotFoundError:
+            warnings.warn("Public key missing", RuntimeWarning)
 
         threads = self.start_cache_threads()
         fuse.Fuse.main(self, args)
