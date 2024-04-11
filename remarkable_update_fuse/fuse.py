@@ -160,6 +160,11 @@ class UpdateFS(fuse.Fuse):
         except FileNotFoundError:
             warnings.warn("Public key missing", RuntimeWarning)
 
+        except OSError as e:
+            if e.errno != errno.ENOTDIR:
+                raise
+            warnings.warn("Unable to open public key", RuntimeWarning)
+
         threads = self.start_cache_threads()
         fuse.Fuse.main(self, args)
         self.exit_threads = True
