@@ -38,6 +38,7 @@ with open("version", "wb") as f:
 ## Building
 Dependencies:
 - curl
+- protoc
 - python
 - python-build
 - python-pip
