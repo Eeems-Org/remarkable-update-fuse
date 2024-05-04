@@ -35,6 +35,26 @@ def assert_byte(offset, byte):
     print("pass")
 
 
+def assert_raw_byte(offset, byte):
+    global FAILED
+    image.seek(offset)
+    data = image.read(1)
+    print(f"checking raw offset {offset:08X} is {to_hex(byte)}: ", end="")
+    if len(data) != 1:
+        print("fail")
+        FAILED = True
+        print(f"  Error: {len(data)} bytes returned, only 1 expected: {to_hex(data)}")
+        return
+
+    if data != byte:
+        print("fail")
+        FAILED = True
+        print(f"  Error: Data returned is {to_hex(data)}")
+        return
+
+    print("pass")
+
+
 def assert_exists(path):
     global FAILED
     print(f"checking that {path} exists: ", end="")
@@ -226,6 +246,11 @@ except Exception as e:
     print("fail")
     print("  ", end="")
     print(e)
+
+# Make sure we aren't reading zeros in the raw image where there should be data
+assert_raw_byte(0x00100000, b"\xa4")
+assert_raw_byte(0x00100001, b"\x81")
+assert_raw_byte(0x00100002, b"\x00")
 
 if FAILED:
     sys.exit(1)
