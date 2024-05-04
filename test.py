@@ -213,11 +213,11 @@ print("checking writing full image to file: ", end="")
 try:
     image.seek(0, os.SEEK_SET)
     with TemporaryFile(mode="wb") as f:
-        digest = sha256(image.read()).hexdigest()
+        digest = sha256(image.peek()).hexdigest()
         if "fc7d145e18f14a1a3f435f2fd5ca5924fe8dfe59bf45605dc540deed59551ae4" != digest:
             raise Exception(f"Incorrect digest: {digest}")
 
-        f.write(image.read())
+        f.write(image.peek())
 
     print("pass")
 
