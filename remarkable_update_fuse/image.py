@@ -24,6 +24,10 @@ def sizeof_fmt(num, suffix="B"):
     return f"{num:.1f}Yi{suffix}"
 
 
+def range_contains(range1, range2):
+    return range1.start < range2.stop and range2.start < range1.stop
+
+
 class BlockCache(TTLCache):
     def __init__(self, maxsize, ttl, timer=time.monotonic, getsizeof=sys.getsizeof):
         super().__init__(maxsize, ttl, timer, getsizeof)
@@ -223,9 +227,13 @@ class UpdateImage(io.RawIOBase):
 
         res = bytearray(size)
         for blob, blob_offset, blob_length, f in self._blobs:
-            if offset < blob_offset:
-                continue
-            if offset >= blob_offset + blob_length:
+            if not range_contains(
+                range(offset, offset + size),
+                range(blob_offset, blob_offset + blob_length),
+            ):
+                if size >= self._size:
+                    print(f"Skipping blob {blob_offset} to {blob_length}, {offset}")
+
                 continue
 
             blob_data = self._read_blob(blob, blob_offset, blob_length, f)

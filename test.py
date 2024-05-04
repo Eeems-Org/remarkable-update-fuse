@@ -8,6 +8,7 @@ from ext4 import ChecksumError
 from ext4 import SymbolicLink
 from ext4.struct import to_hex
 from hashlib import md5
+from hashlib import sha256
 from remarkable_update_fuse import UpdateImage
 from remarkable_update_fuse import UpdateImageSignatureException
 
@@ -19,6 +20,26 @@ def assert_byte(offset, byte):
     reader.seek(offset)
     data = reader.read(1)
     print(f"checking offset {offset:08X} is {to_hex(byte)}: ", end="")
+    if len(data) != 1:
+        print("fail")
+        FAILED = True
+        print(f"  Error: {len(data)} bytes returned, only 1 expected: {to_hex(data)}")
+        return
+
+    if data != byte:
+        print("fail")
+        FAILED = True
+        print(f"  Error: Data returned is {to_hex(data)}")
+        return
+
+    print("pass")
+
+
+def assert_raw_byte(offset, byte):
+    global FAILED
+    image.seek(offset)
+    data = image.read(1)
+    print(f"checking raw offset {offset:08X} is {to_hex(byte)}: ", end="")
     if len(data) != 1:
         print("fail")
         FAILED = True
@@ -207,11 +228,16 @@ except OSError as e:
         FAILED = True
         print(f"  Unexpected error: {os.strerror(e)}")
 
+
 print("checking writing full image to file: ", end="")
 try:
     image.seek(0, os.SEEK_SET)
     with TemporaryFile(mode="wb") as f:
-        f.write(image.read())
+        digest = sha256(image.peek()).hexdigest()
+        if "fc7d145e18f14a1a3f435f2fd5ca5924fe8dfe59bf45605dc540deed59551ae4" != digest:
+            raise Exception(f"Incorrect digest: {digest}")
+
+        f.write(image.peek())
 
     print("pass")
 
@@ -220,6 +246,11 @@ except Exception as e:
     print("fail")
     print("  ", end="")
     print(e)
+
+# Make sure we aren't reading zeros in the raw image where there should be data
+assert_raw_byte(0x00100000, b"\xa4")
+assert_raw_byte(0x00100001, b"\x81")
+assert_raw_byte(0x00100002, b"\x00")
 
 if FAILED:
     sys.exit(1)
