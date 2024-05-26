@@ -64,7 +64,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
           cache: 'pip'
       - name: Nuitka ccache
         uses: actions/cache@v4
@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
           cache: 'pip'
       - name: Nuitka ccache
         uses: actions/cache@v4
@@ -175,7 +175,6 @@ jobs:
       matrix:
         python:
           - '3.11'
-          - '3.12'
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -262,7 +261,6 @@ jobs:
           - 'rmufuse-remarkable'
           - 'pip-sdist'
           - 'pip-wheel-3.11'
-          - 'pip-wheel-3.12'
     permissions:
       contents: write
     steps:
