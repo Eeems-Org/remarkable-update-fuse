@@ -6,14 +6,10 @@ CODEXCTL_HASH := 5c3aa5f264f4ae95de6e259eb8d5da8f0d9c2d7eb3710adb0cf53bcb72dcb79
 FW_VERSION := 2.15.1.1189
 FW_DATA := wVbHkgKisg-
 
-PROTO_SOURCE := $(shell find protobuf -type f -name '*.proto')
-PROTO_OBJ := $(addprefix $(PACKAGE),$(PROTO_SOURCE:%.proto=%_pb2.py))
-
 OBJ := $(shell find ${PACKAGE} -type f)
 OBJ += requirements.txt
 OBJ += pyproject.toml
 OBJ += README.md
-OBJ += $(PROTO_OBJ)
 
 define PLATFORM_SCRIPT
 from sysconfig import get_platform
@@ -123,12 +119,6 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 
 .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed: .venv/bin/codexctl.bin
 	.venv/bin/codexctl.bin download --out .venv ${FW_VERSION}
-
-$(PROTO_OBJ): $(PROTO_SOURCE)
-	protoc \
-	    --python_out=$(PACKAGE) \
-	    --proto_path=protobuf \
-	    $(PROTO_SOURCE)
 
 dev: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed  $(OBJ)
 	if [ -d .venv/mnt ] && mountpoint -q .venv/mnt; then \
