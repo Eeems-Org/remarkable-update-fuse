@@ -81,7 +81,7 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 
 dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	. .venv/bin/activate; \
-	python -m pip install --extra-index-url=https://wheels.eeems.codes/ wheel nuitka; \
+	python -m pip install --extra-index-url=https://wheels.eeems.codes/ nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	nuitka3 \
 	    --enable-plugin=pylint-warnings \
@@ -102,6 +102,7 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	@echo "Setting up development virtual env in .venv"
 	python -m venv .venv
 	. .venv/bin/activate; \
+	python -m pip install wheel; \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ -r requirements.txt
 
 
