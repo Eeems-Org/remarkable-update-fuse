@@ -79,34 +79,63 @@ jobs:
           path: dist
           if-no-files-found: error
   build-executable-alpine:
-    name: Build binary for alpine
+    name: Build binary for alpine ${{ matrix.alpine }} python ${{ matrix.python }}
     needs: [test]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        alpine:
+          - v3.20
+        python:
+          - '3.11'
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: jirutka/setup-alpine@v1
         with:
-          branch: v3.18
+          branch: ${{ matrix.alpine }}
           packages: >
+            bash
             build-base
-            python3
-            python3-dev
-            py3-pip
-            py3-wheel
+            bzip2-dev
             ccache
+            curl
             fuse-dev
             git
+            libffi-dev
+            openssl-dev
             patchelf
             protoc
+            readline-dev
+            sqlite-dev
+            zlib-dev
+            xz-dev
+      - name: Pyenv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.pyenv
+          key: ${{ github.job }}-pyenv-alpine-${{ matrix.alpine }}
+      - name: Install python ${{ matrix.python }}
+        shell: alpine.sh {0}
+        run: |
+          curl https://pyenv.run | bash
+          export PYENV_ROOT="$HOME/.pyenv"
+          [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+          eval "$(pyenv init -)"
+          pyenv install --skip-existing ${{ matrix.python }}
       - name: Nuitka ccache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.nuitka
-          key: ${{ github.job }}-ccache-alpine-v3.18
+          key: ${{ github.job }}-ccache-alpine-${{ matrix.alpine }}
       - name: Build with nuitka
         shell: alpine.sh {0}
-        run: make executable
+        run: |
+          export PYENV_ROOT="$HOME/.pyenv"
+          [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+          eval "$(pyenv init -)"
+          pyenv shell ${{ matrix.python }}
+          make executable
       - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-alpine
