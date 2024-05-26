@@ -122,7 +122,6 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed: .venv/bin/codexctl.bin
 	.venv/bin/codexctl.bin download --out .venv ${FW_VERSION}
 
-
 $(PROTO_OBJ): $(PROTO_SOURCE)
 	protoc \
 	    --python_out=$(PACKAGE) \

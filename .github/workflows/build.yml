@@ -10,8 +10,13 @@ on:
 permissions: read-all
 jobs:
   test:
-    name: Test
+    name: Test with python ${{ matrix.python }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python:
+          - '3.11'
+          - '3.12'
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -28,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python }}
           cache: 'pip'
       - name: Cache test files
         uses: actions/cache@v4
@@ -59,7 +64,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
       - name: Nuitka ccache
         uses: actions/cache@v4
@@ -116,7 +121,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
       - name: Nuitka ccache
         uses: actions/cache@v4
@@ -170,6 +175,7 @@ jobs:
       matrix:
         python:
           - '3.11'
+          - '3.12'
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -256,6 +262,7 @@ jobs:
           - 'rmufuse-remarkable'
           - 'pip-sdist'
           - 'pip-wheel-3.11'
+          - 'pip-wheel-3.12'
     permissions:
       contents: write
     steps:

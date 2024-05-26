@@ -11,16 +11,12 @@ from pathlib import PurePosixPath
 import fuse
 import ext4
 
-from .image import UpdateImage
-from .image import UpdateImageSignatureException
+from remarkable_update_image import UpdateImage
+from remarkable_update_image import UpdateImageSignatureException
 from .threads import KillableThread
 
 
 fuse.fuse_python_api = (0, 2)
-
-
-class ImageException(Exception):
-    pass
 
 
 class FuseArgs(fuse.FuseArgs):
