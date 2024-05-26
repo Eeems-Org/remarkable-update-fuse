@@ -93,6 +93,8 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	    --warn-implicit-exceptions \
 	    --onefile \
 	    --lto=yes \
+	    --include-package=google \
+	    --noinclude-unittest-mode=allow \
 	    --assume-yes-for-downloads \
 	    --python-flag=-m \
 	    --remove-output \
