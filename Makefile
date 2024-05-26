@@ -6,14 +6,10 @@ CODEXCTL_HASH := 5c3aa5f264f4ae95de6e259eb8d5da8f0d9c2d7eb3710adb0cf53bcb72dcb79
 FW_VERSION := 2.15.1.1189
 FW_DATA := wVbHkgKisg-
 
-PROTO_SOURCE := $(shell find protobuf -type f -name '*.proto')
-PROTO_OBJ := $(addprefix $(PACKAGE),$(PROTO_SOURCE:%.proto=%_pb2.py))
-
 OBJ := $(shell find ${PACKAGE} -type f)
 OBJ += requirements.txt
 OBJ += pyproject.toml
 OBJ += README.md
-OBJ += $(PROTO_OBJ)
 
 define PLATFORM_SCRIPT
 from sysconfig import get_platform
@@ -85,7 +81,7 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 
 dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	. .venv/bin/activate; \
-	python -m pip install --extra-index-url=https://wheels.eeems.codes/ wheel nuitka; \
+	python -m pip install --extra-index-url=https://wheels.eeems.codes/ nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	nuitka3 \
 	    --enable-plugin=pylint-warnings \
@@ -93,6 +89,8 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	    --warn-implicit-exceptions \
 	    --onefile \
 	    --lto=yes \
+	    --include-package=google \
+	    --noinclude-unittest-mode=allow \
 	    --assume-yes-for-downloads \
 	    --python-flag=-m \
 	    --remove-output \
@@ -104,6 +102,7 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	@echo "Setting up development virtual env in .venv"
 	python -m venv .venv
 	. .venv/bin/activate; \
+	python -m pip install wheel; \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ -r requirements.txt
 
 
@@ -121,13 +120,6 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 
 .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed: .venv/bin/codexctl.bin
 	.venv/bin/codexctl.bin download --out .venv ${FW_VERSION}
-
-
-$(PROTO_OBJ): $(PROTO_SOURCE)
-	protoc \
-	    --python_out=$(PACKAGE) \
-	    --proto_path=protobuf \
-	    $(PROTO_SOURCE)
 
 dev: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed  $(OBJ)
 	if [ -d .venv/mnt ] && mountpoint -q .venv/mnt; then \
