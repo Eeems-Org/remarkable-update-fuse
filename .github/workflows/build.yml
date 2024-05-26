@@ -78,45 +78,45 @@ jobs:
           name: rmufuse-ubuntu
           path: dist
           if-no-files-found: error
-  build-executable-alpine:
-    name: Build binary for alpine ${{ matrix.alpine }}
-    needs: [test]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        alpine:
-          - v3.19
-    steps:
-      - name: Checkout the Git repository
-        uses: actions/checkout@v4
-      - uses: jirutka/setup-alpine@v1
-        with:
-          branch: ${{ matrix.alpine }}
-          packages: >
-            build-base
-            python3
-            python3-dev
-            py3-pip
-            py3-wheel
-            ccache
-            fuse-dev
-            git
-            patchelf
-            protoc
-      - name: Nuitka ccache
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.nuitka
-          key: ${{ github.job }}-ccache-alpine-${{ matrix.alpine }}
-      - name: Build with nuitka
-        shell: alpine.sh {0}
-        run: |
-          make executable
-      - uses: actions/upload-artifact@v4
-        with:
-          name: rmufuse-alpine
-          path: dist
-          if-no-files-found: error
+  # build-executable-alpine:
+  #   name: Build binary for alpine ${{ matrix.alpine }}
+  #   needs: [test]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       alpine:
+  #         - v3.19
+  #   steps:
+  #     - name: Checkout the Git repository
+  #       uses: actions/checkout@v4
+  #     - uses: jirutka/setup-alpine@v1
+  #       with:
+  #         branch: ${{ matrix.alpine }}
+  #         packages: >
+  #           build-base
+  #           python3
+  #           python3-dev
+  #           py3-pip
+  #           py3-wheel
+  #           ccache
+  #           fuse-dev
+  #           git
+  #           patchelf
+  #           protoc
+  #     - name: Nuitka ccache
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ${{ github.workspace }}/.nuitka
+  #         key: ${{ github.job }}-ccache-alpine-${{ matrix.alpine }}
+  #     - name: Build with nuitka
+  #       shell: alpine.sh {0}
+  #       run: |
+  #         make executable
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: rmufuse-alpine
+  #         path: dist
+  #         if-no-files-found: error
   build-executable-remarkable:
     name: Build binary for reMarkable
     needs: [test]
@@ -253,7 +253,7 @@ jobs:
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
     needs:
       - build-executable-ubuntu
-      - build-executable-alpine
+      # - build-executable-alpine
       - build-executable-remarkable
       - build-wheel
       - build-sdist
@@ -262,7 +262,7 @@ jobs:
       matrix:
         artifact:
           - 'rmufuse-ubuntu'
-          - 'rmufuse-alpine'
+          # - 'rmufuse-alpine'
           - 'rmufuse-remarkable'
           - 'pip-sdist'
           - 'pip-wheel-3.11'
