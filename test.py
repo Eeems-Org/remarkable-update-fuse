@@ -1,5 +1,6 @@
 import sys
-import remarkable_update_fuse
+
+# import remarkable_update_fuse
 
 FAILED = False
 

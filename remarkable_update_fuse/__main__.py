@@ -1,7 +1,3 @@
-import os
-import sys
-import fuse
-
 from . import UpdateFS
 
 

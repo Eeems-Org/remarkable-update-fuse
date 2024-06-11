@@ -41,6 +41,10 @@ endef
 export ABI_SCRIPT
 ABI := $(shell python -c "$$ABI_SCRIPT")
 
+ifeq ($(VENV_BIN_ACTIVATE),)
+VENV_BIN_ACTIVATE := .venv/bin/activate
+endif
+
 clean:
 	if [ -d .venv/mnt ] && mountpoint -q .venv/mnt; then \
 		umount -ql .venv/mnt; \
@@ -79,8 +83,8 @@ dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 	python -m build --wheel
 
 
-dist/rmufuse: dist .venv/bin/activate $(OBJ)
-	. .venv/bin/activate; \
+dist/rmufuse: dist $(VENV_BIN_ACTIVATE) $(OBJ)
+	. $(VENV_BIN_ACTIVATE); \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	nuitka3 \
@@ -98,15 +102,15 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 	    --output-filename=rmufuse \
 	    remarkable_update_fuse
 
-.venv/bin/activate: requirements.txt
+$(VENV_BIN_ACTIVATE): requirements.txt
 	@echo "Setting up development virtual env in .venv"
 	python -m venv .venv
-	. .venv/bin/activate; \
-	python -m pip install wheel; \
+	. $(VENV_BIN_ACTIVATE); \
+	python -m pip install wheel ruff; \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ -r requirements.txt
 
 
-.venv/codexctl.zip: .venv/bin/activate
+.venv/codexctl.zip: $(VENV_BIN_ACTIVATE)
 	curl -L "${CODEXCTL}" -o .venv/codexctl.zip
 
 .venv/bin/codexctl.bin: .venv/codexctl.zip
@@ -121,26 +125,42 @@ dist/rmufuse: dist .venv/bin/activate $(OBJ)
 .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed: .venv/bin/codexctl.bin
 	.venv/bin/codexctl.bin download --out .venv ${FW_VERSION}
 
-dev: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed  $(OBJ)
+dev: $(VENV_BIN_ACTIVATE) .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed  $(OBJ)
 	if [ -d .venv/mnt ] && mountpoint -q .venv/mnt; then \
 		umount -ql .venv/mnt; \
 	fi
 	mkdir -p .venv/mnt
-	. .venv/bin/activate; \
+	. $(VENV_BIN_ACTIVATE); \
 	python -m remarkable_update_fuse \
 	    -d \
 	    -f \
 	    .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed \
 	    .venv/mnt
 
-test: .venv/bin/activate .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed $(OBJ)
-	. .venv/bin/activate; \
+test: $(VENV_BIN_ACTIVATE) .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed $(OBJ)
+	. $(VENV_BIN_ACTIVATE); \
 	python test.py
 
-executable: .venv/bin/activate dist/rmufuse
+executable: $(VENV_BIN_ACTIVATE) dist/rmufuse
 	dist/rmufuse --help
 
 all: release
+
+lint: $(VENV_BIN_ACTIVATE)
+	. $(VENV_BIN_ACTIVATE); \
+	python -m ruff check
+
+lint-fix: $(VENV_BIN_ACTIVATE)
+	. $(VENV_BIN_ACTIVATE); \
+	python -m ruff check
+
+format: $(VENV_BIN_ACTIVATE)
+	. $(VENV_BIN_ACTIVATE); \
+	python -m ruff format --diff
+
+format-fix: $(VENV_BIN_ACTIVATE)
+	. $(VENV_BIN_ACTIVATE); \
+	python -m ruff format
 
 .PHONY: \
 	all \
@@ -152,4 +172,8 @@ all: release
 	release \
 	sdist \
 	wheel \
-	test
+	test \
+	lint \
+	lint-fix \
+	format \
+	format-fix

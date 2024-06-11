@@ -1,13 +1,8 @@
 import errno
 import os
-import queue
 import sys
-import threading
 import time
 import warnings
-
-from pathlib import PurePosixPath
-
 import fuse
 import ext4
 
@@ -66,7 +61,6 @@ class Stat(fuse.Stat):
 class UpdateFS(fuse.Fuse):
     version = "%prog " + fuse.__version__
     fusage = "%prog update_file mountpoint [options]"
-    dash_s_do = "setsingle"
     disable_path_cache = False
     cache_debug = False
     cache_size = 500
@@ -82,6 +76,7 @@ class UpdateFS(fuse.Fuse):
         fuse.Fuse.__init__(
             self,
             *args,
+            dash_s_do="setsingle",
             fuse_args=FuseArgs(),
             parser_class=FuseOptParse,
             **kw,
@@ -183,10 +178,12 @@ class UpdateFS(fuse.Fuse):
         image = self.image
         while not self.exit_threads:
             if self.cache_debug:
-                usage = image.cache.usage_str
+                usage = image.cache.usage_str if image.cache is not None else None
 
             time.sleep(1)
-            image.expire()
+            if "expire" in dir(image):
+                image.expire()
+
             if not self.cache_debug:
                 continue
 
