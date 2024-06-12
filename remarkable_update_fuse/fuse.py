@@ -6,12 +6,28 @@ import warnings
 import fuse
 import ext4
 
+from threading import Lock
+
+from contextlib import contextmanager
+
 from remarkable_update_image import UpdateImage
 from remarkable_update_image import UpdateImageSignatureException
+
 from .threads import KillableThread
 
 
 fuse.fuse_python_api = (0, 2)
+
+_lock = Lock()
+
+
+@contextmanager
+def lock():
+    _lock.acquire()
+    try:
+        yield
+    finally:
+        _lock.release()
 
 
 class FuseArgs(fuse.FuseArgs):
@@ -130,6 +146,7 @@ class UpdateFS(fuse.Fuse):
         if not os.path.exists(self.update_file):
             self.fuse_error(f"fuse: File does not exist {self.update_file}")
 
+        print("Opening image...")
         self.image = UpdateImage(
             self.update_file,
             cache_size=self.cache_size,
@@ -195,16 +212,21 @@ class UpdateFS(fuse.Fuse):
 
     def get_inode(self, path):
         if self.disable_path_cache:
-            inode = self.volume.inode_at(path)
+            with lock():
+                inode = self.volume.inode_at(path)
+
             if inode is None:
                 raise FileNotFoundError()
 
             return inode
 
         if path not in self.inode_cache:
-            inode = self.volume.inode_at(path)
+            with lock():
+                inode = self.volume.inode_at(path)
+
             self.inode_cache[path] = inode
-            inode.verify()
+            with lock():
+                inode.verify()
 
         inode = self.inode_cache[path]
         if inode is None:
@@ -213,7 +235,9 @@ class UpdateFS(fuse.Fuse):
         return inode
 
     def statfs(self):
-        superblock = self.volume.superblock
+        with lock():
+            superblock = self.volume.superblock
+
         struct = fuse.StatVfs()
         struct.f_bsize = self.volume.block_size
         struct.f_frsize = self.volume.block_size
@@ -250,7 +274,9 @@ class UpdateFS(fuse.Fuse):
 
     def open(self, path, flags):
         try:
-            inode = self.get_inode(path)
+            with lock():
+                inode = self.get_inode(path)
+
             if isinstance(inode, ext4.Directory):
                 return -errno.EACCES
 
@@ -276,9 +302,10 @@ class UpdateFS(fuse.Fuse):
                 print(f"{path} not found")
                 return -errno.ENOENT
 
-        reader = inode.open()
-        reader.seek(offset, os.SEEK_SET)
-        return reader.read(size)
+        with lock():
+            reader = inode.open()
+            reader.seek(offset, os.SEEK_SET)
+            return reader.read(size)
 
     def readlink(self, path, inode=None):
         if inode is None:
@@ -292,7 +319,8 @@ class UpdateFS(fuse.Fuse):
         if not isinstance(inode, ext4.SymbolicLink):
             return path
 
-        return inode.readlink().decode("utf-8")
+        with lock():
+            return inode.readlink().decode("utf-8")
 
     def getxattr(self, path, name, _):
         try:
@@ -343,5 +371,14 @@ class UpdateFS(fuse.Fuse):
                 print(f"{path} not found")
                 return -errno.ENOENT
 
-        for dirent, _ in inode.opendir():
+        with lock():
+            iter = inode.opendir()
+
+        while True:
+            with lock():
+                dirent, _ = next(iter, (None, None))
+
+            if dirent is None:
+                break
+
             yield fuse.Direntry(dirent.name_str)
