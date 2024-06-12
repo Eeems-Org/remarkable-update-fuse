@@ -278,7 +278,7 @@ jobs:
           name: ${{ matrix.artifact }}
           path: dist
       - name: Upload to release
-        run:
+        run: |
           if [ -f rmufuse ]; then
             name="rmufuse-${{ matrix.artifact }}"
             mv rmufuse "$name"
