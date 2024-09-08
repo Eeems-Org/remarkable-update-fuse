@@ -105,7 +105,7 @@ dist/rmufuse: dist $(VENV_BIN_ACTIVATE) $(OBJ)
 	    remarkable_update_fuse
 
 dist/rmufuse-portable: dist $(VENV_BIN_ACTIVATE) $(OBJ)
-	$(VENV_BIN_ACTIVATE); \
+	. $(VENV_BIN_ACTIVATE); \
 	python -m pip install \
 	    --extra-index-url=https://wheels.eeems.codes/ \
 	    wheel \
