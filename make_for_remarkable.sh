@@ -11,8 +11,8 @@ apt install -y \\
   protobuf-compiler \\
   libfuse-dev \\
   pkgconf
-cp -a /opt/lib/nuitka .venv
-source /opt/lib/nuitka/bin/activate
+cp -a /opt/lib/nuitka /src/.venv
+source /src/.venv/bin/activate
 pip install --upgrade pip build
 make -C /src \"\$@\"
 "
