@@ -155,17 +155,17 @@ jobs:
             fi
           done
         working-directory: ${{ github.workspace }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rmufuse-remarkable
+          path: dist
+          if-no-files-found: error
       - name: Sanity check
         uses: Eeems-Org/run-in-remarkable-action@v1
         with:
           fw_version: 2.15.1
           run: ./rmufuse-portable --help
           path: dist
-      - uses: actions/upload-artifact@v4
-        with:
-          name: rmufuse-remarkable
-          path: dist
-          if-no-files-found: error
   build-wheel:
     name: Build wheel with python ${{ matrix.python }}
     needs: [test]
