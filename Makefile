@@ -87,7 +87,7 @@ dist/rmufuse: dist $(VENV_BIN_ACTIVATE) $(OBJ)
 	. $(VENV_BIN_ACTIVATE); \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
-	nuitka3 \
+	python -m nuitka \
 	    --enable-plugin=pylint-warnings \
 	    --enable-plugin=upx \
 	    --warn-implicit-exceptions \
