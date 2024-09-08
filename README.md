@@ -16,28 +16,10 @@ rmufuse path/to/update_file.signed /mnt/signed
 - Will report checksum errors for Directory inode, even though they are fine
 - Will report checksum errors for extent headers, even though they are fine
 
-## Programatic Usage
-
-```python
-from ext4 import Volume
-from remarkable_update_fuse import UpdateImage
-
-image = UpdateImage("path/to/update/file.signed")
-
-# Extract raw ext4 image
-with open("image.ext4", "wb") as f:
-    f.write(image.read())
-
-# Extract specific file
-volume = Volume(image)
-inode = volume.inode_at("/etc/version")
-with open("version", "wb") as f:
-    f.write(inode.open().read())
-```
-
 ## Building
 Dependencies:
 - curl
+- protoc
 - python
 - python-build
 - python-pip
@@ -50,6 +32,7 @@ make # Build wheel and sdist packages in dist/
 make wheel # Build wheel package in dist/
 make sdist # Build sdist package in dist/
 make dev # Test mounting 2.15.1.1189 to .venv/mnt
+make test # Run automated tests
 make install # Build wheel and install it with pipx or pip install --user
 make executable # Build a standalone executable
 make portable # Build a standalone executable with some extra dependencies embedded

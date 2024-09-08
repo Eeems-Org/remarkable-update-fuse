@@ -10,8 +10,13 @@ on:
 permissions: read-all
 jobs:
   test:
-    name: Test
+    name: Test with python ${{ matrix.python }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python:
+          - '3.11'
+          - '3.12'
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -29,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python }}
           cache: 'pip'
       - name: Cache test files
         uses: actions/cache@v4
@@ -76,15 +81,19 @@ jobs:
           path: dist
           if-no-files-found: error
   build-executable-alpine:
-    name: Build binary for alpine
+    name: Build binary for alpine ${{ matrix.alpine }}
     needs: [test]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        alpine:
+          - v3.19
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: jirutka/setup-alpine@v1
         with:
-          branch: v3.18
+          branch: ${{ matrix.alpine }}
           packages: >
             build-base
             python3
@@ -100,10 +109,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.nuitka
-          key: ${{ github.job }}-ccache-alpine-v3.18
+          key: ${{ github.job }}-ccache-alpine-${{ matrix.alpine }}
       - name: Build with nuitka
         shell: alpine.sh {0}
-        run: make executable
+        run: |
+          make executable
       - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-alpine
@@ -264,7 +274,7 @@ jobs:
           name: ${{ matrix.artifact }}
           path: dist
       - name: Upload to release
-        run:
+        run: |
           if [ -f rmufuse ]; then
             name="rmufuse-${{ matrix.artifact }}"
             mv rmufuse "$name"

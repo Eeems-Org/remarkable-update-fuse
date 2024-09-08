@@ -1,6 +1,6 @@
 [project]
 name = "remarkable_update_fuse"
-version = "1.0.4"
+version = "1.2.0"
 authors = [
   { name="Eeems", email="eeems@eeems.email" },
 ]
@@ -20,6 +20,11 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dynamic = ["dependencies", "readme"]
+
+[project.urls]
+Homepage = "https://github.com/Eeems-Org/remarkable-update-fuse"
+Repository = "https://github.com/Eeems-Org/remarkable-update-fuse.git"
+Issues = "https://github.com/Eeems-Org/remarkable-update-fuse/issues"
 
 [project.scripts]
 rmufuse = "remarkable_update_fuse.__main__:main"

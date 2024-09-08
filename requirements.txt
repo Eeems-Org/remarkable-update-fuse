@@ -1,4 +1,2 @@
-cryptography==41.0.7
 fuse-python==1.0.7
-protobuf==4.21.1
-ext4==1.0.1
+remarkable-update-image==1.1.1
