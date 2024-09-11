@@ -1,2 +1,2 @@
 fuse-python==1.0.7
-remarkable-update-image==1.1.2
+remarkable-update-image==1.1.3
