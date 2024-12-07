@@ -17,7 +17,6 @@ jobs:
         python:
           - '3.11'
           - '3.12'
-          - '3.13'
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -181,12 +180,12 @@ jobs:
     name: Build wheel with python ${{ matrix.python }}
     needs: [test]
     runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_34_x86_64:latest
     strategy:
       matrix:
         python:
           - '3.11'
           - '3.12'
-          - '3.13'
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -195,10 +194,6 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: 'pip'
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "25.x"
       - name: Install build tool
         run: pip install build
       - name: Building package
@@ -224,10 +219,6 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "25.x"
       - name: Install build tool
         run: pip install build
       - name: Building package
@@ -250,7 +241,6 @@ jobs:
           - 'pip-sdist'
           - 'pip-wheel-3.11'
           - 'pip-wheel-3.12'
-          - 'pip-wheel-3.13'
     permissions:
       id-token: write
       contents: write
@@ -287,7 +277,6 @@ jobs:
           - 'pip-sdist'
           - 'pip-wheel-3.11'
           - 'pip-wheel-3.12'
-          - 'pip-wheel-3.13'
     permissions:
       contents: write
     steps:
