@@ -1,11 +1,11 @@
 [project]
 name = "remarkable_update_fuse"
-version = "1.2.2"
+version = "1.2.3"
 authors = [
   { name="Eeems", email="eeems@eeems.email" },
 ]
 description = "Userspace filesystem for remarkable update files"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -41,5 +41,5 @@ dependencies = {file = ["requirements.txt"]}
 readme = {file= ["README.md"], content-type = "text/markdown"}
 
 [build-system]
-requires = ["setuptools>=42", "wheel", "nuitka", "toml"]
+requires = ["setuptools>=42", "wheel", "nuitka"]
 build-backend = "nuitka.distutils.Build"
