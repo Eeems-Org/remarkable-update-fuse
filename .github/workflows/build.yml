@@ -17,7 +17,6 @@ jobs:
         python:
           - '3.11'
           - '3.12'
-          - '3.13'
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -26,11 +25,6 @@ jobs:
           execute_install_scripts: true
           packages: libfuse-dev
           version: 1.0
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "25.x"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -62,11 +56,6 @@ jobs:
           execute_install_scripts: true
           packages: libfuse-dev ccache
           version: 1.0
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "25.x"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout the Git repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -109,7 +98,6 @@ jobs:
             fuse-dev
             git
             patchelf
-            protoc
       - name: Nuitka ccache
         uses: actions/cache@v4
         with:
@@ -180,7 +168,6 @@ jobs:
         python:
           - '3.11'
           - '3.12'
-          - '3.13'
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -189,19 +176,24 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: 'pip'
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "25.x"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install build tool
-        run: pip install build
       - name: Building package
-        run: make wheel
+        run: |
+          python_version=${{ matrix.python }}
+          python_version=cp${python_version//.}
+          script=$(cat <<EOF
+          cd /src;
+          export PATH=\$PATH:/opt/python/$python_version-$python_version/bin;
+          make ${{ env.FLAGS }} wheel;
+          auditwheel repair dist/*.whl;
+          EOF
+          )
+          docker run -v $(pwd):/src \
+            quay.io/pypa/manylinux_2_34_x86_64:latest \
+            /bin/bash -c "$script"
       - uses: actions/upload-artifact@v4
         with:
           name: pip-wheel-${{ matrix.python }}
-          path: dist/*
+          path: wheelhouse/*
           if-no-files-found: error
   build-sdist:
     name: Build sdist
@@ -215,11 +207,6 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "25.x"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install build tool
         run: pip install build
       - name: Building package
@@ -232,8 +219,16 @@ jobs:
   publish:
     name: Publish to PyPi
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
-    needs: [build-sdist]
+    needs:
+      - build-sdist
+      - build-wheel
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        artifact:
+          - 'pip-sdist'
+          - 'pip-wheel-3.11'
+          - 'pip-wheel-3.12'
     permissions:
       id-token: write
       contents: write
@@ -245,7 +240,7 @@ jobs:
         id: download
         uses: actions/download-artifact@v4
         with:
-          name: pip-sdist
+          name: ${{ matrix.artifact }}
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -270,7 +265,6 @@ jobs:
           - 'pip-sdist'
           - 'pip-wheel-3.11'
           - 'pip-wheel-3.12'
-          - 'pip-wheel-3.13'
     permissions:
       contents: write
     steps:
