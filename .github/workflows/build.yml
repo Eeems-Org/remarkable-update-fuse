@@ -134,39 +134,31 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build with nuitka
         run: |
-          docker run \
-            --rm \
-            --platform=linux/arm/v7 \
-            -v "${src_path}":/src \
-            eeems/nuitka-arm-builder:bullseye-3.11 \
-            bash -ec "$script" \
+          set -e
+          ./make_for_remarkable.sh portable \
           | while read -r line; do
-            if [[ "$line" == 'Nuitka'*':ERROR:'* ]]; then
+            if [[ "$line" == 'Nuitka'*':ERROR:'* ]] || [[ "$line" == "ERROR:"* ]]; then
               echo "::error file=${{ steps.args.outputs.main_file }},title=Nuitka Error::$line"
-            elif [[ "$line" == 'Nuitka'*':WARNING:'* ]]; then
+            elif [[ "$line" == 'Nuitka'*':WARNING:'* ]] || [[ "$line" == "WARNING:"* ]]; then
               echo "::warning file=${{ steps.args.outputs.main_file }},title=Nuitka Warning::$line"
-            elif [[ "$line" == 'Nuitka:INFO:'* ]]; then
+            elif [[ "$line" == 'Nuitka:INFO:'* ]] || [[ "$line" == "INFO:"* ]]; then
               echo "$line"
             else
               echo "::debug::$line"
             fi
           done
-        env:
-          src_path: ${{ github.workspace }}
-          script: |
-            apt update
-            apt install -y \
-              protobuf-compiler \
-              libfuse-dev
-            cp -a /opt/lib/nuitka .venv
-            source /opt/lib/nuitka/bin/activate
-            pip install --upgrade pip
-            make -C /src executable
+        working-directory: ${{ github.workspace }}
       - uses: actions/upload-artifact@v4
         with:
           name: rmufuse-remarkable
           path: dist
           if-no-files-found: error
+      - name: Sanity check
+        uses: Eeems-Org/run-in-remarkable-action@v1
+        with:
+          fw_version: 2.15.1
+          run: ./rmufuse-portable --help
+          path: dist
   build-wheel:
     name: Build wheel with python ${{ matrix.python }}
     needs: [test]
@@ -289,6 +281,10 @@ jobs:
           if [ -f rmufuse ]; then
             name="rmufuse-${{ matrix.artifact }}"
             mv rmufuse "$name"
+            gh release upload "$TAG" "$name" --clobber
+          elif [ -f rmufuse-portable ]; then
+            name="rmufuse-${{ matrix.artifact }}"
+            mv rmufuse-portable "$name"
             gh release upload "$TAG" "$name" --clobber
           else
             find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber

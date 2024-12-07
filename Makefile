@@ -82,10 +82,12 @@ dist/${PACKAGE}-${VERSION}.tar.gz: dist $(OBJ)
 dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
 	python -m build --wheel
 
-
 dist/rmufuse: dist $(VENV_BIN_ACTIVATE) $(OBJ)
 	. $(VENV_BIN_ACTIVATE); \
-	python -m pip install --extra-index-url=https://wheels.eeems.codes/ nuitka; \
+	python -m pip install \
+	    --extra-index-url=https://wheels.eeems.codes/ \
+	    wheel \
+	    nuitka; \
 	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
 	python -m nuitka \
 	    --enable-plugin=pylint-warnings \
@@ -97,10 +99,34 @@ dist/rmufuse: dist $(VENV_BIN_ACTIVATE) $(OBJ)
 	    --noinclude-unittest-mode=allow \
 	    --assume-yes-for-downloads \
 	    --python-flag=-m \
-	    --remove-output \
 	    --output-dir=dist \
+	    --remove-output \
 	    --output-filename=rmufuse \
 	    remarkable_update_fuse
+
+dist/rmufuse-portable: dist $(VENV_BIN_ACTIVATE) $(OBJ)
+	. $(VENV_BIN_ACTIVATE); \
+	python -m pip install \
+	    --extra-index-url=https://wheels.eeems.codes/ \
+	    wheel \
+	    nuitka; \
+	NUITKA_CACHE_DIR="$(realpath .)/.nuitka" \
+	python -m nuitka \
+	    --enable-plugin=pylint-warnings \
+	    --enable-plugin=upx \
+	    --warn-implicit-exceptions \
+	    --onefile \
+	    --lto=yes \
+	    --assume-yes-for-downloads \
+	    --python-flag=-m \
+	    --output-dir=dist \
+	    --remove-output \
+	    --output-filename=rmufuse-portable \
+	    '--include-data-files=$(shell pkgconf --variable=libdir fuse)/libfuse.so=libfuse.so.2' \
+	    '--include-data-files=$(shell pkgconf --variable=libdir libssl)/libssl.so=libssl.so.1' \
+	    '--include-data-files=$(shell pkgconf --variable=libdir libcrypto)/libcrypto.so=libcrypto.so.3' \
+	    remarkable_update_fuse
+	patchelf --print-needed dist/rmufuse-portable
 
 $(VENV_BIN_ACTIVATE): requirements.txt
 	@echo "Setting up development virtual env in .venv"
@@ -141,8 +167,10 @@ test: $(VENV_BIN_ACTIVATE) .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed $(O
 	. $(VENV_BIN_ACTIVATE); \
 	python test.py
 
-executable: $(VENV_BIN_ACTIVATE) dist/rmufuse
+executable: dist/rmufuse
 	dist/rmufuse --help
+
+portable: dist/rmufuse-portable
 
 all: release
 
@@ -168,6 +196,7 @@ format-fix: $(VENV_BIN_ACTIVATE)
 	clean \
 	dev \
 	executable \
+	portable \
 	install \
 	release \
 	sdist \
