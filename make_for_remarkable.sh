@@ -20,5 +20,6 @@ docker run \
   --rm \
   --platform=linux/arm/v7 \
   -v "$(pwd)":/src \
+  -v "${HOME}/.cache/pip:/root/.cache/pip" \
   eeems/nuitka-arm-builder:bullseye-3.11 \
   bash -ec "$script" -- "$@"
