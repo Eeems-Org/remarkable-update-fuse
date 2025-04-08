@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := all
 VERSION := $(shell grep -m 1 version pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
 PACKAGE := $(shell grep -m 1 name pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
-CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1719419372/ubuntu-latest.zip
-CODEXCTL_HASH := 210f68f8a2136120b706c29852f9b7ce306d6e30d2f6124eb23eb25e858685e5
+CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1739239465/ubuntu-latest.zip
+CODEXCTL_HASH := fdd36098ef7364cebe28b1343f39b7752eaa05f80f0fe956d04758c45396b2bc
 FW_VERSION := 2.15.1.1189
 FW_DATA := wVbHkgKisg-
 
@@ -139,17 +139,17 @@ $(VENV_BIN_ACTIVATE): requirements.txt
 .venv/codexctl.zip: $(VENV_BIN_ACTIVATE)
 	curl -L "${CODEXCTL}" -o .venv/codexctl.zip
 
-.venv/bin/codexctl.bin: .venv/codexctl.zip
+.venv/bin/codexctl: .venv/codexctl.zip
 	@bash -c 'if ! sha256sum -c <(echo "${CODEXCTL_HASH} .venv/codexctl.zip") > /dev/null 2>&1; then \
 	    echo "Hash mismatch, removing invalid codexctl.zip"; \
 	    rm .venv/codexctl.zip; \
 	    exit 1; \
 	fi'
 	unzip -n .venv/codexctl.zip -d .venv/bin
-	chmod +x .venv/bin/codexctl.bin
+	chmod +x .venv/bin/codexctl
 
-.venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed: .venv/bin/codexctl.bin
-	.venv/bin/codexctl.bin download --out .venv ${FW_VERSION}
+.venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed: .venv/bin/codexctl
+	.venv/bin/codexctl download --hardware rm2 --out .venv ${FW_VERSION}
 
 dev: $(VENV_BIN_ACTIVATE) .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed  $(OBJ)
 	if [ -d .venv/mnt ] && mountpoint -q .venv/mnt; then \
