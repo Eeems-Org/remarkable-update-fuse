@@ -117,6 +117,7 @@ dist/rmufuse-portable: dist $(VENV_BIN_ACTIVATE) $(OBJ)
 	    --warn-implicit-exceptions \
 	    --onefile \
 	    --lto=yes \
+     --include-package=google \
 	    --assume-yes-for-downloads \
 	    --python-flag=-m \
 	    --output-dir=dist \
