@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 *.orig
 .nuitka/
+nuitka-crash-report.xml
