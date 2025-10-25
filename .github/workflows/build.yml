@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         python:
-          - '3.11'
-          - '3.12'
+          - "3.11"
+          - "3.12"
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-          cache: 'pip'
+          cache: "pip"
       - name: Cache test files
         uses: actions/cache@v4
         with:
@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         python:
-          - '3.11'
+          - "3.11"
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-          cache: 'pip'
+          cache: "pip"
       - name: Nuitka ccache
         uses: actions/cache@v4
         with:
@@ -121,8 +121,8 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
       - name: Nuitka ccache
         uses: actions/cache@v4
         with:
@@ -166,8 +166,8 @@ jobs:
     strategy:
       matrix:
         python:
-          - '3.11'
-          - '3.12'
+          - "3.11"
+          - "3.12"
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -175,7 +175,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-          cache: 'pip'
+          cache: "pip"
       - name: Building package
         run: |
           python_version=${{ matrix.python }}
@@ -205,8 +205,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
       - name: Install build tool
         run: pip install build
       - name: Building package
@@ -226,9 +226,9 @@ jobs:
     strategy:
       matrix:
         artifact:
-          - 'pip-sdist'
-          - 'pip-wheel-3.11'
-          - 'pip-wheel-3.12'
+          - "pip-sdist"
+          - "pip-wheel-3.11"
+          - "pip-wheel-3.12"
     permissions:
       id-token: write
       contents: write
@@ -259,12 +259,12 @@ jobs:
     strategy:
       matrix:
         artifact:
-          - 'rmufuse-ubuntu'
-          - 'rmufuse-alpine'
-          - 'rmufuse-remarkable'
-          - 'pip-sdist'
-          - 'pip-wheel-3.11'
-          - 'pip-wheel-3.12'
+          - "rmufuse-ubuntu"
+          - "rmufuse-alpine"
+          - "rmufuse-remarkable"
+          - "pip-sdist"
+          - "pip-wheel-3.11"
+          - "pip-wheel-3.12"
     permissions:
       contents: write
     steps:
