@@ -17,6 +17,7 @@ jobs:
         python:
           - "3.11"
           - "3.12"
+          - "3.13"
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -169,6 +170,7 @@ jobs:
         python:
           - "3.11"
           - "3.12"
+          - "3.13"
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v4
@@ -230,6 +232,7 @@ jobs:
           - "pip-sdist"
           - "pip-wheel-3.11"
           - "pip-wheel-3.12"
+          - "pip-wheel-3.13"
     permissions:
       id-token: write
       contents: write
@@ -266,6 +269,7 @@ jobs:
           - "pip-sdist"
           - "pip-wheel-3.11"
           - "pip-wheel-3.12"
+          - "pip-wheel-3.13"
     permissions:
       contents: write
     steps:

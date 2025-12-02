@@ -1,13 +1,13 @@
 [project]
 name = "remarkable_update_fuse"
-version = "1.2.6"
+version = "1.3"
 authors = [
   { name="Eeems", email="eeems@eeems.email" },
 ]
 description = "Userspace filesystem for remarkable update files"
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.11,<3.14"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
@@ -16,6 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: System :: Filesystems",
     "Topic :: Utilities",
 ]
@@ -30,9 +31,8 @@ Issues = "https://github.com/Eeems-Org/remarkable-update-fuse/issues"
 rmufuse = "remarkable_update_fuse.__main__:main"
 
 [tool.setuptools]
-packages = [
-    "remarkable_update_fuse",
-]
+packages = ["remarkable_update_fuse"]
+
 [tool.setuptools.package-data]
 remarkable_update_fuse = ['update_metadata.proto']
 
