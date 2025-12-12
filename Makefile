@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := all
 VERSION := $(shell grep -m 1 version pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
 PACKAGE := $(shell grep -m 1 name pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
-CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1739239465/ubuntu-latest.zip
-CODEXCTL_HASH := fdd36098ef7364cebe28b1343f39b7752eaa05f80f0fe956d04758c45396b2bc
+CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1765093380/ubuntu-latest.zip
+CODEXCTL_HASH := 9cf5b27e95e7cc1a961e41e26c8b71cd38f77fad38f819fdfced2ee1f3e2ebd3
 FW_VERSION := 2.15.1.1189
 FW_DATA := wVbHkgKisg-
 
@@ -139,6 +139,7 @@ $(VENV_BIN_ACTIVATE): requirements.txt
 
 .venv/codexctl.zip: $(VENV_BIN_ACTIVATE)
 	curl -L "${CODEXCTL}" -o .venv/codexctl.zip
+	rm -f .venv/bin/codexctl
 
 .venv/bin/codexctl: .venv/codexctl.zip
 	@bash -c 'if ! sha256sum -c <(echo "${CODEXCTL_HASH} .venv/codexctl.zip") > /dev/null 2>&1; then \
