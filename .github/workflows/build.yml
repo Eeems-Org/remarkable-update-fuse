@@ -155,6 +155,22 @@ jobs:
           name: rmufuse-remarkable
           path: dist
           if-no-files-found: error
+      - name: Free up space
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          sudo apt-get autoremove -y
+          sudo apt-get autoclean -y
+          sudo rm -rf \
+            /usr/lib/jvm \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /usr/local/.ghcup \
+            /usr/local/julia* \
+            /usr/local/lib/android \
+            /usr/local/share/chromium \
+            /opt/microsoft /opt/google \
+            /opt/az \
+            /usr/local/share/powershell
       - name: Sanity check
         uses: Eeems-Org/run-in-remarkable-action@v1
         with:
