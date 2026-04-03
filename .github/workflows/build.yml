@@ -312,14 +312,26 @@ jobs:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
       - name: Download pip packages
-        id: download
+        id: download-pip
         uses: actions/download-artifact@v8
         with:
           pattern: pip-*
+          merge-multiple: true
+      - name: Download pip packages
+        id: download-rmufuse
+        uses: actions/download-artifact@v8
+        with:
+          pattern: rmufuse-*
           merge-multiple: true
       - name: Upload to release
         run: find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-        working-directory: ${{ steps.download.outputs.download-path }}
+        working-directory: ${{ steps.download-pip.outputs.download-path }}
+      - name: Upload to release
+        run: find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        working-directory: ${{ steps.download-rmufuse.outputs.download-path }}
