@@ -59,7 +59,7 @@ build: wheel
 release: wheel sdist
 
 .PHONY: install
-install: wheel
+install: native-wheel
 	if type pipx > /dev/null; then \
 	    pipx install \
 	        --force \
