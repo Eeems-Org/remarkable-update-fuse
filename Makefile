@@ -10,6 +10,7 @@ OBJ := $(shell find ${PACKAGE} -type f)
 OBJ += requirements.txt
 OBJ += pyproject.toml
 OBJ += README.md
+OBJ += LICENSE
 
 define PLATFORM_SCRIPT
 from sysconfig import get_platform
