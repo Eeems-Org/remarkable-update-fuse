@@ -85,7 +85,10 @@ jobs:
           path: ${{ github.workspace }}/.nuitka
           key: ${{ github.job }}-ccache-ubuntu-latest
       - name: Build with nuitka
-        run: make executable
+        run: |
+          set -e
+          make executable
+          mv dist/rmufuse dist/rmufuse-ubuntu
       - uses: actions/upload-artifact@v6
         with:
           name: rmufuse-ubuntu
@@ -125,7 +128,9 @@ jobs:
       - name: Build with nuitka
         shell: alpine.sh {0}
         run: |
+          set -e
           make executable
+          mv dist/rmufuse dist/rmufuse-alpine
       - uses: actions/upload-artifact@v6
         with:
           name: rmufuse-alpine
@@ -166,6 +171,7 @@ jobs:
               echo "::debug::$line"
             fi
           done
+          mv dist/rmufuse-portable dist/rmufuse-remarkable
         working-directory: ${{ github.workspace }}
       - uses: actions/upload-artifact@v6
         with:
@@ -192,7 +198,7 @@ jobs:
         uses: Eeems-Org/run-in-remarkable-action@v1
         with:
           fw_version: 2.15.1
-          run: ./rmufuse-portable --help
+          run: ./rmufuse-remarkable --help
           path: dist
   build-wheel:
     name: Build wheel with python ${{ matrix.python }}
