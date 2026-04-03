@@ -221,14 +221,16 @@ jobs:
           python_version=${{ matrix.python }}
           python_version=cp${python_version//.}
           script=$(cat <<EOF
-          dnf install fuse-devel
+          dnf -y install fuse-devel
           cd /src;
           export PATH=\$PATH:/opt/python/$python_version-$python_version/bin;
           make ${{ env.FLAGS }} native-wheel;
           auditwheel repair dist/*.whl;
           EOF
           )
-          docker run -v $(pwd):/src \
+          docker run \
+            --rm \
+            --volume=$(pwd):/src \
             quay.io/pypa/manylinux_2_34_x86_64:latest \
             /bin/bash -c "$script"
       - uses: actions/upload-artifact@v6
