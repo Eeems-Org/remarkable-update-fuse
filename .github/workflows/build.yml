@@ -13,10 +13,6 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Debug flags
-        shell: bash
-        if: runner.debug == '1'
-        run: echo 'FLAGS=-d' >> "$GITHUB_ENV"
       - name: Checkout the Git repository
         uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -68,11 +64,9 @@ jobs:
     steps:
       - name: Install Apt packages
         id: cache-apt
-        uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: Eeems-Org/apt-cache-action@v1
         with:
-          execute_install_scripts: true
           packages: libfuse-dev ccache
-          version: 1.0
       - name: Checkout the Git repository
         uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -224,7 +218,7 @@ jobs:
           dnf -y install fuse-devel
           cd /src;
           export PATH=\$PATH:/opt/python/$python_version-$python_version/bin;
-          make ${{ env.FLAGS }} native-wheel;
+          make native-wheel;
           auditwheel repair dist/*.whl;
           EOF
           )
