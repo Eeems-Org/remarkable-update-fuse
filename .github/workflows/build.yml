@@ -34,6 +34,7 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
+      fail-fast: false
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -65,6 +66,7 @@ jobs:
       matrix:
         python:
           - "3.11"
+      fail-fast: false
     steps:
       - name: Install Apt packages
         id: cache-apt
@@ -99,6 +101,7 @@ jobs:
       matrix:
         alpine:
           - v3.19
+      fail-fast: false
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
@@ -200,6 +203,7 @@ jobs:
     strategy:
       matrix:
         python: *python-versions
+      fail-fast: false
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
