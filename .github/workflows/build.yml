@@ -221,6 +221,7 @@ jobs:
           python_version=${{ matrix.python }}
           python_version=cp${python_version//.}
           script=$(cat <<EOF
+          dnf install fuse-devel
           cd /src;
           export PATH=\$PATH:/opt/python/$python_version-$python_version/bin;
           make ${{ env.FLAGS }} native-wheel;
