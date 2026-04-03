@@ -149,7 +149,7 @@ $(VENV_BIN_ACTIVATE): requirements.txt
 	python -m venv .venv
 	. $(VENV_BIN_ACTIVATE); \
 	python -m pip install wheel ruff build; \
-	python -m pip install -r requirements.txt
+	python -m pip install --extra-index-url=https://wheels.eeems.codes/ -r requirements.txt
 
 
 .venv/codexctl.zip: $(VENV_BIN_ACTIVATE)
