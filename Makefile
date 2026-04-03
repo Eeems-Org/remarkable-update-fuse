@@ -85,10 +85,12 @@ wheel: dist/${PACKAGE}-${VERSION}-py3-none-any.whl
 dist:
 	mkdir -p dist
 
-dist/${PACKAGE}-${VERSION}.tar.gz: dist $(OBJ)
+dist/${PACKAGE}-${VERSION}.tar.gz: ${VENV_BIN_ACTIVATE} dist $(OBJ)
+	. ${VENV_BIN_ACTIVATE}; \
 	python -m build --sdist
 
-dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
+dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: ${VENV_BIN_ACTIVATE} dist $(OBJ)
+	. ${VENV_BIN_ACTIVATE}; \
 	python -m build --wheel
 
 dist/${PACKAGE}-${VERSION}-py3-none-any.whl: ${VENV_BIN_ACTIVATE} dist $(OBJ)
@@ -146,7 +148,7 @@ $(VENV_BIN_ACTIVATE): requirements.txt
 	@echo "Setting up development virtual env in .venv"
 	python -m venv .venv
 	. $(VENV_BIN_ACTIVATE); \
-	python -m pip install wheel ruff; \
+	python -m pip install wheel ruff build; \
 	python -m pip install -r requirements.txt
 
 
@@ -202,7 +204,7 @@ lint: $(VENV_BIN_ACTIVATE)
 .PHONY: lint-fix
 lint-fix: $(VENV_BIN_ACTIVATE)
 	. $(VENV_BIN_ACTIVATE); \
-	python -m ruff check
+	python -m ruff check --fix
 
 .PHONY: format
 format: $(VENV_BIN_ACTIVATE)
