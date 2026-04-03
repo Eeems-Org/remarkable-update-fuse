@@ -10,6 +10,7 @@ OBJ := $(shell find ${PACKAGE} -type f)
 OBJ += requirements.txt
 OBJ += pyproject.toml
 OBJ += README.md
+OBJ += LICENSE
 
 define PLATFORM_SCRIPT
 from sysconfig import get_platform
@@ -45,17 +46,21 @@ ifeq ($(VENV_BIN_ACTIVATE),)
 VENV_BIN_ACTIVATE := .venv/bin/activate
 endif
 
+.PHONY: clean
 clean:
 	if [ -d .venv/mnt ] && mountpoint -q .venv/mnt; then \
 		umount -ql .venv/mnt; \
 	fi
 	git clean --force -dX
 
+.PHONY: build
 build: wheel
 
-release: wheel sdist
+.PHONY: release
+release: native-wheel wheel sdist
 
-install: wheel
+.PHONY: install
+install: native-wheel
 	if type pipx > /dev/null; then \
 	    pipx install \
 	        --force \
@@ -69,18 +74,36 @@ install: wheel
 	        ${PACKAGE}; \
 	fi
 
+.PHONY: sdist
 sdist: dist/${PACKAGE}-${VERSION}.tar.gz
 
-wheel: dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl
+.PHONY: native-wheel
+native-wheel: dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl
+
+.PHONY: wheel
+wheel: dist/${PACKAGE}-${VERSION}-py3-none-any.whl
 
 dist:
 	mkdir -p dist
 
-dist/${PACKAGE}-${VERSION}.tar.gz: dist $(OBJ)
-	python -m build --sdist
+dist/${PACKAGE}-${VERSION}.tar.gz: ${VENV_BIN_ACTIVATE} dist $(OBJ)
+	. ${VENV_BIN_ACTIVATE}; \
+	PIP_EXTRA_INDEX_URL=https://wheels.eeems.codes/ \
+	python -m build \
+	  --sdist
 
-dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: dist $(OBJ)
-	python -m build --wheel
+dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: ${VENV_BIN_ACTIVATE} dist $(OBJ)
+	. ${VENV_BIN_ACTIVATE}; \
+	PIP_EXTRA_INDEX_URL=https://wheels.eeems.codes/ \
+	python -m build \
+	  --wheel
+
+dist/${PACKAGE}-${VERSION}-py3-none-any.whl: ${VENV_BIN_ACTIVATE} dist $(OBJ)
+	. ${VENV_BIN_ACTIVATE}; \
+	PIP_EXTRA_INDEX_URL=https://wheels.eeems.codes/ \
+	python -m build \
+	  --wheel \
+	  --config-setting=build_with_nuitka=false
 
 dist/rmufuse: dist $(VENV_BIN_ACTIVATE) $(OBJ)
 	. $(VENV_BIN_ACTIVATE); \
@@ -133,7 +156,7 @@ $(VENV_BIN_ACTIVATE): requirements.txt
 	@echo "Setting up development virtual env in .venv"
 	python -m venv .venv
 	. $(VENV_BIN_ACTIVATE); \
-	python -m pip install wheel ruff; \
+	python -m pip install wheel ruff build; \
 	python -m pip install --extra-index-url=https://wheels.eeems.codes/ -r requirements.txt
 
 
@@ -153,6 +176,7 @@ $(VENV_BIN_ACTIVATE): requirements.txt
 .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed: .venv/bin/codexctl
 	.venv/bin/codexctl download --hardware rm2 --out .venv ${FW_VERSION}
 
+.PHONY: dev
 dev: $(VENV_BIN_ACTIVATE) .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed  $(OBJ)
 	if [ -d .venv/mnt ] && mountpoint -q .venv/mnt; then \
 		umount -ql .venv/mnt; \
@@ -165,46 +189,37 @@ dev: $(VENV_BIN_ACTIVATE) .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed  $(O
 	    .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed \
 	    .venv/mnt
 
+.PHONY: test
 test: $(VENV_BIN_ACTIVATE) .venv/${FW_VERSION}_reMarkable2-${FW_DATA}.signed $(OBJ)
 	. $(VENV_BIN_ACTIVATE); \
 	python test.py
 
+.PHONY: executable
 executable: dist/rmufuse
 	dist/rmufuse --help
 
+.PHONY: portable
 portable: dist/rmufuse-portable
 
+.PHONY: all
 all: release
 
+.PHONY: lint
 lint: $(VENV_BIN_ACTIVATE)
 	. $(VENV_BIN_ACTIVATE); \
 	python -m ruff check
 
+.PHONY: lint-fix
 lint-fix: $(VENV_BIN_ACTIVATE)
 	. $(VENV_BIN_ACTIVATE); \
-	python -m ruff check
+	python -m ruff check --fix
 
+.PHONY: format
 format: $(VENV_BIN_ACTIVATE)
 	. $(VENV_BIN_ACTIVATE); \
 	python -m ruff format --diff
 
+.PHONY: format-fix
 format-fix: $(VENV_BIN_ACTIVATE)
 	. $(VENV_BIN_ACTIVATE); \
 	python -m ruff format
-
-.PHONY: \
-	all \
-	build \
-	clean \
-	dev \
-	executable \
-	portable \
-	install \
-	release \
-	sdist \
-	wheel \
-	test \
-	lint \
-	lint-fix \
-	format \
-	format-fix
