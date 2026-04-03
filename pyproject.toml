@@ -6,6 +6,8 @@ authors = [
 ]
 description = "Userspace filesystem for remarkable update files"
 requires-python = ">=3.11,<3.14"
+license = "MIT"
+license-files=["LICENSE"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
