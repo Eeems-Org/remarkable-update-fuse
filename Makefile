@@ -87,15 +87,22 @@ dist:
 
 dist/${PACKAGE}-${VERSION}.tar.gz: ${VENV_BIN_ACTIVATE} dist $(OBJ)
 	. ${VENV_BIN_ACTIVATE}; \
-	python -m build --sdist
+	PIP_EXTRA_INDEX_URL=https://wheels.eeems.codes/ \
+	python -m build \
+	  --sdist
 
 dist/${PACKAGE}-${VERSION}-${ABI}-${ABI}-${PLATFORM}.whl: ${VENV_BIN_ACTIVATE} dist $(OBJ)
 	. ${VENV_BIN_ACTIVATE}; \
-	python -m build --wheel
+	PIP_EXTRA_INDEX_URL=https://wheels.eeems.codes/ \
+	python -m build \
+	  --wheel
 
 dist/${PACKAGE}-${VERSION}-py3-none-any.whl: ${VENV_BIN_ACTIVATE} dist $(OBJ)
 	. ${VENV_BIN_ACTIVATE}; \
-	python -m build --wheel --config-setting=build_with_nuitka=false
+	PIP_EXTRA_INDEX_URL=https://wheels.eeems.codes/ \
+	python -m build \
+	  --wheel \
+	  --config-setting=build_with_nuitka=false
 
 dist/rmufuse: dist $(VENV_BIN_ACTIVATE) $(OBJ)
 	. $(VENV_BIN_ACTIVATE); \
