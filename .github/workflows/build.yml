@@ -171,7 +171,7 @@ jobs:
               echo "::debug::$line"
             fi
           done
-          mv dist/rmufuse-portable dist/rmufuse-remarkable
+          sudo mv dist/rmufuse-portable dist/rmufuse-remarkable
         working-directory: ${{ github.workspace }}
       - uses: actions/upload-artifact@v6
         with:
