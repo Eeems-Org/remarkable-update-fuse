@@ -38,11 +38,9 @@ jobs:
     steps:
       - name: Install Apt packages
         id: cache-apt
-        uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: Eeems-Org/apt-cache-action@v1
         with:
-          execute_install_scripts: true
           packages: libfuse-dev
-          version: 1.0
       - name: Checkout the Git repository
         uses: actions/checkout@v6
       - uses: actions/setup-python@v6
