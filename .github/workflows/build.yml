@@ -243,8 +243,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-      - name: Install build tool
-        run: pip install build
       - name: Building package
         run: make wheel
       - uses: actions/upload-artifact@v6
@@ -264,8 +262,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-      - name: Install build tool
-        run: pip install build
       - name: Building package
         run: make sdist
       - uses: actions/upload-artifact@v6
@@ -316,26 +312,26 @@ jobs:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
       - name: Download pip packages
-        id: download-pip
+        id: packages
         uses: actions/download-artifact@v8
         with:
           pattern: pip-*
           merge-multiple: true
-      - name: Download pip packages
-        id: download-rmufuse
+      - name: Download executables
+        id: executables
         uses: actions/download-artifact@v8
         with:
           pattern: rmufuse-*
           merge-multiple: true
-      - name: Upload to release
+      - name: Upload pip packages to release
         run: find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-        working-directory: ${{ steps.download-pip.outputs.download-path }}
-      - name: Upload to release
+        working-directory: ${{ steps.packages.outputs.download-path }}
+      - name: Upload executables to release
         run: find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-        working-directory: ${{ steps.download-rmufuse.outputs.download-path }}
+        working-directory: ${{ steps.executables.outputs.download-path }}

@@ -56,7 +56,7 @@ clean:
 build: wheel
 
 .PHONY: release
-release: wheel sdist
+release: native-wheel wheel sdist
 
 .PHONY: install
 install: native-wheel
