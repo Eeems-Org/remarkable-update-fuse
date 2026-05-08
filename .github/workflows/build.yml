@@ -318,21 +318,16 @@ jobs:
         with:
           pattern: pip-*
           merge-multiple: true
+          path: dist
       - name: Download executables
-        id: executables
         uses: actions/download-artifact@v8
         with:
           pattern: rmufuse-*
           merge-multiple: true
-      - name: Upload pip packages to release
+          path: ${{ steps.packages.outputs.download-path }}
+      - name: Upload artifacts to release
         run: find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
         working-directory: ${{ steps.packages.outputs.download-path }}
-      - name: Upload executables to release
-        run: find . -type f | xargs -rI {} gh release upload "$TAG" {} --clobber
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        working-directory: ${{ steps.executables.outputs.download-path }}
