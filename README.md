@@ -19,7 +19,6 @@ rmufuse path/to/update_file.signed /mnt/signed
 ## Building
 Dependencies:
 - curl
-- protoc
 - python
 - python-build
 - python-pip
