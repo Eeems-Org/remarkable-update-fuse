@@ -3,18 +3,17 @@ import os
 import sys
 import time
 import warnings
-import fuse
-import ext4
-
+from contextlib import contextmanager
 from threading import Lock
 
-from contextlib import contextmanager
-
-from remarkable_update_image import UpdateImage
-from remarkable_update_image import UpdateImageSignatureException
+import ext4
+import fuse
+from remarkable_update_image import (
+    UpdateImage,
+    UpdateImageSignatureException,
+)
 
 from .threads import KillableThread
-
 
 fuse.fuse_python_api = (0, 2)
 
@@ -261,7 +260,7 @@ class UpdateFS(fuse.Fuse):
                 return -errno.ENOENT
 
         _stat = Stat()
-        _stat.st_mode = inode.i_mode.value
+        _stat.st_mode = inode.i_mode
         _stat.st_ino = inode.i_uid
         _stat.st_nlink = inode.i_links_count
         _stat.st_uid = inode.i_uid
