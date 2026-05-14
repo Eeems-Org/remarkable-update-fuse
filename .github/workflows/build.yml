@@ -21,6 +21,7 @@ jobs:
           cache: "pip"
       - name: Lint code
         run: make lint format
+
   test:
     name: Test with python ${{ matrix.python }}
     runs-on: ubuntu-latest
@@ -53,6 +54,7 @@ jobs:
           key: test-files-${{ hashFiles('Makefile') }}
       - name: Run tests
         run: make test
+
   build-executable-ubuntu:
     name: Build binary for ubuntu
     needs: [test]
@@ -89,6 +91,7 @@ jobs:
           name: rmufuse-ubuntu
           path: dist
           if-no-files-found: error
+
   build-executable-alpine:
     name: Build binary for alpine ${{ matrix.alpine }}
     needs: [test]
@@ -96,7 +99,7 @@ jobs:
     strategy:
       matrix:
         alpine:
-          - v3.19
+          - v3.20
       fail-fast: false
     steps:
       - name: Checkout the Git repository
@@ -131,6 +134,7 @@ jobs:
           name: rmufuse-alpine
           path: dist
           if-no-files-found: error
+
   # build-executable-remarkable:
   #   name: Build binary for reMarkable
   #   needs: [test]
@@ -195,6 +199,7 @@ jobs:
   #         fw_version: 2.15.1
   #         run: ./rmufuse-remarkable --help
   #         path: dist
+
   build-wheel:
     name: Build wheel with python ${{ matrix.python }}
     needs: [test]
@@ -233,6 +238,7 @@ jobs:
           name: pip-wheel-${{ matrix.python }}
           path: wheelhouse/*
           if-no-files-found: error
+
   build-any-wheel:
     name: Build wheel
     runs-on: ubuntu-latest
@@ -252,6 +258,7 @@ jobs:
           name: pip-wheel-none-any
           path: dist/*
           if-no-files-found: error
+
   build-sdist:
     name: Build sdist
     needs: [test]
@@ -271,6 +278,7 @@ jobs:
           name: pip-sdist
           path: dist/*
           if-no-files-found: error
+
   publish:
     name: Publish to PyPi
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
@@ -298,6 +306,7 @@ jobs:
         with:
           packages-dir: ${{ steps.download.outputs.download-path }}
           skip-existing: true
+
   release:
     name: Add files to release
     if: github.repository == 'Eeems-Org/remarkable-update-fuse' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
