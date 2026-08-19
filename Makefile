@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := all
 VERSION := $(shell grep -m 1 version pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
 PACKAGE := $(shell grep -m 1 name pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
-CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1765093380/ubuntu-latest.zip
-CODEXCTL_HASH := 9cf5b27e95e7cc1a961e41e26c8b71cd38f77fad38f819fdfced2ee1f3e2ebd3
+CODEXCTL := https://github.com/Jayy001/codexctl/releases/download/1782343066/ubuntu-latest.zip
+CODEXCTL_HASH := ee42717fdfc7213c530198695c4b41038f14642fdd393a8ed71d5c14b9136662
 FW_VERSION := 2.15.1.1189
 FW_DATA := wVbHkgKisg-
 

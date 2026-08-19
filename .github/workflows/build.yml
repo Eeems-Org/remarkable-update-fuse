@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+        uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: "pip"
@@ -40,8 +40,8 @@ jobs:
         with:
           packages: libfuse-dev
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+        uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           cache: "pip"
@@ -71,13 +71,13 @@ jobs:
         with:
           packages: libfuse-dev ccache
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+        uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           cache: "pip"
       - name: Nuitka ccache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/.nuitka
           key: ${{ github.job }}-ccache-ubuntu-latest
@@ -86,7 +86,7 @@ jobs:
           set -e
           make executable
           mv dist/rmufuse dist/rmufuse-ubuntu
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: rmufuse-ubuntu
           path: dist
@@ -103,7 +103,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - uses: jirutka/setup-alpine@v1
         with:
           branch: ${{ matrix.alpine }}
@@ -125,7 +125,7 @@ jobs:
             --repository=https://dl-cdn.alpinelinux.org/alpine/v3.17/community \
             'patchelf<0.18'
       - name: Nuitka ccache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/.nuitka
           key: ${{ github.job }}-ccache-alpine-${{ matrix.alpine }}
@@ -135,7 +135,7 @@ jobs:
           set -e
           make executable
           mv dist/rmufuse dist/rmufuse-alpine
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: rmufuse-alpine
           path: dist
@@ -147,13 +147,13 @@ jobs:
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Checkout the Git repository
-  #       uses: actions/checkout@v6
-  #     - uses: actions/setup-python@v6
+  #       uses: actions/checkout@v7
+  #     - uses: actions/setup-python@v7
   #       with:
   #         python-version: "3.11"
   #         cache: "pip"
   #     - name: Nuitka ccache
-  #       uses: actions/cache@v5
+  #       uses: actions/cache@v6
   #       with:
   #         path: ${{ github.workspace }}/.nuitka
   #         key: ${{ github.job }}-ccache-remarkable-2.15.1
@@ -178,7 +178,7 @@ jobs:
   #         done
   #         sudo mv dist/rmufuse-portable dist/rmufuse-remarkable
   #       working-directory: ${{ github.workspace }}
-  #     - uses: actions/upload-artifact@v6
+  #     - uses: actions/upload-artifact@v7
   #       with:
   #         name: rmufuse-remarkable
   #         path: dist
@@ -216,9 +216,9 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           cache: "pip"
@@ -239,7 +239,7 @@ jobs:
             --volume=$(pwd):/src \
             quay.io/pypa/manylinux_2_34_x86_64:latest \
             /bin/bash -c "$script"
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: pip-wheel-${{ matrix.python }}
           path: wheelhouse/*
@@ -251,15 +251,15 @@ jobs:
     needs: [test, lint]
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: "pip"
       - name: Building package
         run: make wheel
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: pip-wheel-none-any
           path: dist/*
@@ -271,15 +271,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: "pip"
       - name: Building package
         run: make sdist
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: pip-sdist
           path: dist/*
@@ -328,7 +328,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout the Git repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Download pip packages
         id: packages
         uses: actions/download-artifact@v8

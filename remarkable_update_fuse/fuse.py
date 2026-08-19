@@ -83,11 +83,11 @@ class UpdateFS(fuse.Fuse):
 
     image = None
     volume = None
-    inode_cache = {}
     queue = None
     exit_threads = False
 
     def __init__(self, *args, **kw):
+        self.inode_cache = {}
         fuse.Fuse.__init__(
             self,
             *args,
@@ -189,7 +189,7 @@ class UpdateFS(fuse.Fuse):
 
     # Static as it's being started by threading.Thread
     @staticmethod
-    def expire_thread(self):
+    def expire_thread(self):  # noqa: PLW0211
         prev_usage = ""
         image = self.image
         while not self.exit_threads:
