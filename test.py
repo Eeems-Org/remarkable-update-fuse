@@ -1,13 +1,15 @@
 import sys
 import time
-import fuse
-
 from threading import Thread
 
+import fuse
+
 from remarkable_update_fuse import KillableThread
-from remarkable_update_fuse.fuse import lock
-from remarkable_update_fuse.fuse import _lock
-from remarkable_update_fuse.fuse import FuseArgs
+from remarkable_update_fuse.fuse import (
+    FuseArgs,
+    _lock,
+    lock,
+)
 
 FAILED = False
 

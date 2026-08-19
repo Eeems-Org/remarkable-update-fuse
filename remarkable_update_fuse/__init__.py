@@ -1,13 +1,16 @@
+from remarkable_update_image import (
+    UpdateImage,
+    UpdateImageException,
+    UpdateImageSignatureException,
+)
+
 from .fuse import UpdateFS
-from remarkable_update_image import UpdateImage
-from remarkable_update_image import UpdateImageException
-from remarkable_update_image import UpdateImageSignatureException
 from .threads import KillableThread
 
 __all__ = [
+    "KillableThread",
     "UpdateFS",
     "UpdateImage",
     "UpdateImageException",
     "UpdateImageSignatureException",
-    "KillableThread",
 ]
